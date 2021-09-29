@@ -1,6 +1,24 @@
 import React, { Component } from 'react';
 import { mapStylePicker, layerControl } from './style';
 
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
+const BUS_ROUTES = ['Bx2', 'Bx4', 'Bx17', 'Bx19', 'M15'];
+
+export const DATA_CONTROLS = {
+  date: {
+    displayName: 'Date-Time',
+    type: 'time-picker',
+    value: 1630468800000 // new Date(2021,8,1).getTime() // 2021-9-1: 1630468800000
+  },
+  busRoute: {
+    displayName: 'Bus Route',
+    type: 'selector',
+    value: 'Bx2'
+  }
+};
+
 export const HEXAGON_CONTROLS = {
   showHexagon: {
     displayName: 'Show Hexagon',
@@ -52,14 +70,14 @@ export const SCATTERPLOT_CONTROLS = {
     type: 'boolean',
     value: true
   },
-  radiusScale: {
-    displayName: 'Scatterplot Radius',
-    type: 'range',
-    value: 30,
-    step: 10,
-    min: 10,
-    max: 200
-  }
+  // radiusScale: {
+  //   displayName: 'Scatterplot Radius',
+  //   type: 'range',
+  //   // value: 30,
+  //   // step: 10,
+  //   min: 10,
+  //   max: 200
+  // }
 };
 
 const MAPBOX_DEFAULT_MAPSTYLES = [
@@ -187,6 +205,13 @@ const Setting = props => {
 
       case 'boolean':
         return <Checkbox {...props} />;
+
+      case 'selector':
+        return <Selector {...props} />;
+
+      case 'time-picker':
+        return <TimePicker {...props} />;
+
       default:
         return <input {...props} />;
     }
@@ -227,5 +252,51 @@ const Slider = ({ settingName, value, propType, onChange }) => {
         </div>
       </div>
     </div>
+  );
+};
+
+// single pick
+const Selector = ({ settingName, value, onChange }) => {
+  return (
+    <div key={settingName}>
+      <div className="input-group">
+        <select
+          type='selector'
+          value={value}
+          onChange={e => onChange(settingName, e.target.value)}
+        >
+          {BUS_ROUTES.map(route => (
+            <option key={route} value={route}>
+              {route}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+}
+
+const TimePicker = ({ settingName, value, onChange }) => {
+
+  const filterFutureTime = (time) => {
+    const currentDate = new Date();
+    const selectedDate = new Date(time);
+
+    return currentDate.getTime() > selectedDate.getTime();
+  };
+  
+  return (
+    <DatePicker
+      selected={value}
+      onChange={(date) => {
+          // setStartDate(date);
+          onChange(settingName, date.getTime());
+        }
+      }
+      showTimeSelect
+      timeIntervals={60}
+      filterTime={filterFutureTime}
+      dateFormat="MMMM d, yyyy h:mm aa"
+    />
   );
 };
