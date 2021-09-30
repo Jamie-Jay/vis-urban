@@ -1,7 +1,8 @@
-/* global window */
 import React from 'react';
 import { MapLayers } from './MapLayers'
 import { MapStylePicker } from './controls';
+import { getDataFromJson, getPointsFromJson } from './helper/formatData'
+import { layerControl } from './style';
 
 // console.log(new Date(2021,8,1).getTime()) // 2021-9-1: 1630468800000
 const START_TIME = 1630468800000;
@@ -22,84 +23,27 @@ function getUrl(selectedTimeStamp, busRoute) {
     );
 }
 
-function getDataFromJson (rawData) {
-  return rawData.reduce(
-    (accu, curr) => {
-      // add all points and timestamp of a vehicle id
-      // [{"vehicle_id": , path:[[,],[],[]...], timestamps:[]},...]
-
-      // process timestamp
-      let currTimestamp = new Date(
-        curr.properties.timestamp.substring(0, 19) // '2021-09-20 12:51:46-04:00'
-        );
-      currTimestamp = currTimestamp.getMinutes() * 60 + currTimestamp.getSeconds()
-
-      // make up speed
-      let speed = Math.random() * 10;
-
-      const index = accu.findIndex((currentValue) => currentValue.vehicle_id === curr.properties.vehicle_id);
-      if (index < 0) {
-        // didn't find the vehicle, create new
-        accu.push({
-          vehicle_id: curr.properties.vehicle_id,
-          path: [curr.geometry.coordinates],
-          timestamps: [currTimestamp],
-          speedmph: [speed],
-          // realTimes: [curr.properties.timestamp]
-        })
-        
-      } else {
-        // add to the path and timestamps
-        accu[index].path.push(curr.geometry.coordinates)
-        accu[index].timestamps.push(currTimestamp)
-        accu[index].speedmph.push(speed)
-        // accu[index].realTimes.push(curr.properties.timestamp)
-      }
-
-      return accu;
-    },
-    []
-  );
-}
-
-function getPointsFromJson (rawData) {
-  return rawData.reduce(
-    (accu, curr) => {
-      // make up speed
-      let speed = Math.random() * 10;
-
-      accu.push({
-        position: curr.geometry.coordinates,
-        vehicle_id: curr.properties.vehicle_id,
-        // time: time,
-        bearing: curr.properties.bearing,
-        speedmph: speed
-      })
-      return accu;
-    },
-    []
-  );
-}
-
 export default class App extends React.Component{
 
   state = {
+    dataJson: [],
     data: [],
     points: [],
     style: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
-    // selectedTimeStamp: START_TIME, // one select delay -- why?
-    // busRoute: 'Bx2' // one select delay -- why?
+    selectedTimeStamp: START_TIME,
+    busRoute: 'Bx2' 
+    // TODO: multiple select - singapore bus example
   }
 
   componentDidMount(){
     this.getApiData (START_TIME, 'Bx2')
   }
 
-   getApiData = async (selectedTimeStamp, busRoute) => {
+   getApiData = async (selectedTimeStamp, busRoute, readLocalFile = false) => {
     // combine url
     // const { selectedTimeStamp, busRoute } = this.state
-    const urlStr = getUrl(selectedTimeStamp, busRoute)
-    console.log(urlStr)
+    const urlStr = readLocalFile ? './geojson.json' : getUrl(selectedTimeStamp, busRoute)
+    // console.log(urlStr)
 
     await fetch(urlStr, {
       method: "GET",
@@ -110,24 +54,49 @@ export default class App extends React.Component{
     })
     .then(response => response.json())//解析为Promise
     .then(data => {
-      console.log('url data', data)
+      // console.log('url data', data)
 
-      this.setState({data: data['features']})  ////赋值到本地数据
-      this._processData();
-    }, err => {console.log(err); alert(err)})
+      // empty data points
+      if (data['features'] && data['features'].length > 0) {
+        this.setState({dataJson: data['features']})  ////赋值到本地数据
+        this._processData();
+
+        this.setState({
+          selectedTimeStamp, busRoute
+        })
+      } else {
+        alert('data points for ' + new Date(selectedTimeStamp) + ' ' + busRoute + ' is empty. Please choose another timepoint or bus route.');
+      }
+    }, err => {
+      // Status Code: 500 Internal Server Error
+      console.log(err); 
+      alert(err);
+      // this.getApiData(0, 0, readLocalFile = true)
+    })
 
     /** url exceptions:
      * http://api.buswatcher.org/api/v2/nyc/2021/9/15/12/Bx2/buses/geojson: Internal Server Error
+     * {
+          "type": "Shipment",
+          "Status": "False",
+          "Request": {
+              "Year": "2020",
+              "Month": "10",
+              "Day": "15",
+              "Hour": "0",
+              "Route": "M1"
+          }
+      }
      * http://api.buswatcher.org/api/v2/nyc/2021/9/27/1/Bx17/buses/geojson: { "type": "FeatureCollection", "features": [] }
      */
   }
 
   _processData = () => {
 
-    const data = getDataFromJson(this.state.data)
-    const points = getPointsFromJson(this.state.data)
+    const data = getDataFromJson(this.state.dataJson)
+    const points = getPointsFromJson(this.state.dataJson)
 
-    this.setState({data, points});
+    this.setState({ data, points })
   };
 
   onStyleChange = style => {
@@ -136,32 +105,18 @@ export default class App extends React.Component{
 
   getSelectedDataSource = (selectedTimeStamp, busRoute) => {
     // console.log(selectedTimeStamp, busRoute)
-    let dataChanged = false
-    if (selectedTimeStamp > START_TIME && selectedTimeStamp !== this.state.selectedTimeStamp ) {
-      // console.log('time stamp changed')
-      // this.setState ({ // one select delay -- why?
-      //   selectedTimeStamp
-      // });
-      dataChanged = true;
+    if (
+        (selectedTimeStamp > START_TIME && selectedTimeStamp !== this.state.selectedTimeStamp)
+        || busRoute !== this.state.busRoute 
+      ) { // at least one of them is changed
+      this.getApiData (selectedTimeStamp, busRoute)
     }
-
-    if (busRoute !== this.state.busRoute ) {
-      // console.log('bus route changed to', busRoute)
-      // this.setState ({ // one select delay -- why?
-      //   busRoute
-      // });
-      // console.log('new route', this.state.busRoute)
-      dataChanged = true;         
-    }
-
-    if (dataChanged) {
-      this.getApiData (selectedTimeStamp, busRoute); 
-    }
+    // TODO: map centers on the new route
+    // TODO: add a button to finish the data source changes
   }
 
   render(){
-    // console.log("this.state.data in render", this.state.data)
-    // console.log("this.state.selectedTimeStamp in render", new Date(this.state.selectedTimeStamp))
+    // console.log("this.state in render", this.state)
 
     return (
       <div>
@@ -170,11 +125,19 @@ export default class App extends React.Component{
           currentStyle={this.state.style}
         />
         <MapLayers 
-          trips={this.state.data} 
+          trips={this.state.data}
           points={this.state.points} 
+          geojson={this.state.dataJson} 
           mapStyle={this.state.style}
           getSelectedDataSource={this.getSelectedDataSource}
         />
+        <span style={{...layerControl, top: '0px'}}>
+          <b>Current Data Source:</b>
+          <br/>
+          {new Date(this.state.selectedTimeStamp).toString()}
+          <br/>
+          {this.state.busRoute}
+        </span>
       </div>
     )
   }

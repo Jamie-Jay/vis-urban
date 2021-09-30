@@ -24,11 +24,11 @@ export const layerControl = {
   lineHeight: 1.833,
   width: 200,
   position: 'absolute',
-  top: '20px',
+  top: '150px',
   right: '20px',
   padding: '20px',
   zIndex: 100,
-  background: 'white'
+  background: 'rgba(255,255,255,0.3)'
 };
 
 export const charts = {

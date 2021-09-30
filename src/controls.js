@@ -23,7 +23,7 @@ export const HEXAGON_CONTROLS = {
   showHexagon: {
     displayName: 'Show Hexagon',
     type: 'boolean',
-    value: true
+    value: false
   },
   radius: {
     displayName: 'Hexagon Radius',
@@ -36,7 +36,7 @@ export const HEXAGON_CONTROLS = {
   coverage: {
     displayName: 'Hexagon Coverage',
     type: 'range',
-    value: 1,
+    value: 0.5,
     step: 0.1,
     min: 0,
     max: 1
@@ -52,16 +52,26 @@ export const HEXAGON_CONTROLS = {
   showScatterplot: {
     displayName: 'Show Scatterplot',
     type: 'boolean',
+    value: false
+  },
+  // radiusScale: {
+  //   displayName: 'Scatterplot Radius',
+  //   type: 'range',
+  //   value: 5,
+  //   step: 5,
+  //   min: 1,
+  //   max: 200
+  // }
+  showGeoJson: {
+    displayName: 'Show GeoJson',
+    type: 'boolean',
     value: true
   },
-  radiusScale: {
-    displayName: 'Scatterplot Radius',
-    type: 'range',
-    value: 5,
-    step: 5,
-    min: 1,
-    max: 200
-  }
+  showTripTrace: {
+    displayName: 'Show Trip Trace',
+    type: 'boolean',
+    value: true
+  },
 };
 
 export const SCATTERPLOT_CONTROLS = {
@@ -284,7 +294,7 @@ const TimePicker = ({ settingName, value, onChange }) => {
 
     return currentDate.getTime() > selectedDate.getTime();
   };
-  
+
   return (
     <DatePicker
       selected={value}

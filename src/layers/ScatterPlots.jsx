@@ -20,7 +20,7 @@ export const ScatterPlots = (props) => {
         radiusMinPixels: 0.25,
         radiusMaxPixels: 30,
         data,
-        // onHover,
+        onHover,
         // ...settings
       }),
   ];
