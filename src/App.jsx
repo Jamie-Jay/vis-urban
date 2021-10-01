@@ -1,8 +1,8 @@
 import React from 'react';
 import { MapLayers } from './MapLayers'
-import { MapStylePicker } from './controls';
+import { MapStylePicker } from './helper/controls';
 import { getDataFromJson, getPointsFromJson } from './helper/formatData'
-import { layerControl } from './style';
+import { layerControl } from './helper/style';
 
 // console.log(new Date(2021,8,1).getTime()) // 2021-9-1: 1630468800000
 const START_TIME = 1630468800000;
@@ -52,13 +52,13 @@ export default class App extends React.Component{
         'Accept': 'application/json'
         },
     })
-    .then(response => response.json())//解析为Promise
+    .then(response => response.json())// Promise
     .then(data => {
       // console.log('url data', data)
 
       // empty data points
       if (data['features'] && data['features'].length > 0) {
-        this.setState({dataJson: data['features']})  ////赋值到本地数据
+        this.setState({dataJson: data['features']})
         this._processData();
 
         this.setState({
@@ -103,16 +103,17 @@ export default class App extends React.Component{
     this.setState({ style });
   };
 
-  getSelectedDataSource = (selectedTimeStamp, busRoute) => {
-    // console.log(selectedTimeStamp, busRoute)
-    if (
-        (selectedTimeStamp > START_TIME && selectedTimeStamp !== this.state.selectedTimeStamp)
-        || busRoute !== this.state.busRoute 
-      ) { // at least one of them is changed
-      this.getApiData (selectedTimeStamp, busRoute)
+  getSelectedTime = (selectedTimeStamp) => {
+    if (selectedTimeStamp > START_TIME 
+      && selectedTimeStamp !== this.state.selectedTimeStamp) {
+      this.getApiData (selectedTimeStamp, this.state.busRoute)
     }
-    // TODO: map centers on the new route
-    // TODO: add a button to finish the data source changes
+  }
+
+  getSelectedRoute = (busRoute) => {
+    if (busRoute !== this.state.busRoute) {
+      this.getApiData (this.state.selectedTimeStamp, busRoute)
+    }
   }
 
   render(){
@@ -129,7 +130,8 @@ export default class App extends React.Component{
           points={this.state.points} 
           geojson={this.state.dataJson} 
           mapStyle={this.state.style}
-          getSelectedDataSource={this.getSelectedDataSource}
+          getSelectedTime={this.getSelectedTime}
+          getSelectedRoute={this.getSelectedRoute}
         />
         <span style={{...layerControl, top: '0px'}}>
           <b>Current Data Source:</b>

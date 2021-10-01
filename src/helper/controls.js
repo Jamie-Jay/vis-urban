@@ -7,7 +7,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 const BUS_ROUTES = ['Bx2', 'Bx4', 'Bx17', 'Bx19', 'M15'];
 
 export const DATA_CONTROLS = {
-  date: {
+  dataTime: {
     displayName: 'Date-Time',
     type: 'time-picker',
     value: 1630468800000 // new Date(2021,8,1).getTime() // 2021-9-1: 1630468800000
@@ -167,17 +167,12 @@ export function MapStylePicker({ currentStyle, onStyleChange }) {
 }
 
 export class LayerControls extends Component {
-  _onValueChange(settingName, newValue) {
+  _onValueChange = (settingName, newValue) => {
     const { settings } = this.props;
     // Only update if we have a confirmed change
     if (settings[settingName] !== newValue) {
-      // Create a new object so that shallow-equal detects a change
-      const newSettings = {
-        ...this.props.settings,
-        [settingName]: newValue
-      };
-
-      this.props.onChange(newSettings);
+      // shallow-equal detects a change
+      this.props.onChange(settingName, newValue);
     }
   }
 
@@ -185,7 +180,7 @@ export class LayerControls extends Component {
     const { title, settings, propTypes = {} } = this.props;
 
     return (
-      <div className="layer-controls" style={layerControl}>
+      <div className="layer-controls" style ={layerControl}>
         {title && <h4>{title}</h4>}
         {Object.keys(settings).map(key => (
           <div key={key}>
@@ -197,7 +192,7 @@ export class LayerControls extends Component {
               settingName={key}
               value={settings[key]}
               propType={propTypes[key]}
-              onChange={this._onValueChange.bind(this)}
+              onChange={this._onValueChange}
             />
           </div>
         ))}
@@ -299,7 +294,6 @@ const TimePicker = ({ settingName, value, onChange }) => {
     <DatePicker
       selected={value}
       onChange={(date) => {
-          // setStartDate(date);
           onChange(settingName, date.getTime());
         }
       }

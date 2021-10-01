@@ -1,5 +1,5 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
-import { COLOR_PALETTE } from '../helper/Constants'
+import { COLOR_PALETTE } from '../helper/constants'
 
 export function GeoJson({data, onHover, settings}) {
 

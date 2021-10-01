@@ -1,7 +1,7 @@
-import {useState, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {TripsLayer} from '@deck.gl/geo-layers';
 // import {PolygonLayer} from '@deck.gl/layers';
-import { COLOR_PALETTE } from '../helper/Constants'
+import { COLOR_PALETTE } from '../helper/constants'
 
 export const Trips = ({
   tripPath,
@@ -11,11 +11,47 @@ export const Trips = ({
   settings = null,
   onHover = null
 }) => {
+  // The key in all of this is the currentTime variable. 
+  // This variable tells DeckGL which path coordinate to render, based on the the corresponding timestamp.
   const [time, setTime] = useState(0);
+
+  const [minTime, setMinTime] = useState(0);
+  const [maxTime, setMaxTime] = useState(loopLength);
+  useEffect(
+    () => {
+      const timestamps = tripPath.reduce(
+        (ts, trip) => ts.concat(trip.timestamps),
+        []
+      );
+    
+      setMinTime(Math.min(...timestamps));
+      setMaxTime(Math.max(...timestamps));
+    },
+    [tripPath]
+  )
+
+  /*
+  // use timeinteval to implement animation
+  // the animation will likely start to break down and become "choppy". 
+  // This generally tends to happen if it takes longer to execute the loop than the interval (intervals will start getting backed up).
+  const intervalMS = 20;
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(t => (t + animationSpeed) % loopLength);
+    }, intervalMS);
+  
+    return () => clearInterval(interval);
+  }, []);
+  */
+
+  // use window.requestAnimationFrame function
+  // it allows the browser to request the interval when it's ready (based on how long the previous loop took to render).
+  // https://css-tricks.com/using-requestanimationframe/
+  // https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
   const [animation] = useState({});
 
   const animate = () => {
-    setTime(t => (t + animationSpeed) % loopLength);
+    setTime(t => (t + animationSpeed) % maxTime);
     animation.id = window.requestAnimationFrame(animate);
   };
 
@@ -24,7 +60,7 @@ export const Trips = ({
       animation.id = window.requestAnimationFrame(animate);
       return () => window.cancelAnimationFrame(animation.id);
     },
-    [animation]
+    [animation, maxTime]
   );
 
   const layers = [
@@ -56,6 +92,23 @@ export const Trips = ({
       // ...settings
     })
   ];
+
+  layers.push(
+    // time bar
+    <div style={{ width: '100%', marginTop: "1.5rem" }}>
+      <b>Trip Trace Controller</b>
+      <input
+        style={{ width: '100%' }}
+        type="range"
+        min={minTime}
+        max={maxTime}
+        step="0.1"
+        value={time}
+        onChange={(e) => { setTime(Number(e.target.value)); }}
+      />
+      Time: {time}
+    </div>
+  )
 
   return layers;
 }

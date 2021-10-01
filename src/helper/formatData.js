@@ -1,11 +1,36 @@
 // rawData: from api json
-// turn to [{"vehicle_id": , path:[[,],[],[]...], timestamps:[]},...]
+/** turn to 
+ * [
+      {
+        "vehicle_id": , 
+        path:[
+          [,],
+          [,],
+          [,],
+          ...
+        ], 
+        timestamps:[ // a corresponding timestamp for path entry. This is how the TripsLayer knows which point to draw, based on the current time of the map.
+          ,
+          ,
+          ,
+          ...
+        ]
+      },
+      ...
+    ]
+
+    the range of timestamp values:
+      const timestamps = trips.reduce(
+        (ts, trip) => ts.concat(trip.timestamps),
+        []
+      );
+
+      console.log('Min:', Math.min(...timestamps));
+      console.log('Max:', Math.max(...timestamps));
+*/
 export function getDataFromJson (rawData) {
   return rawData.reduce(
     (accu, curr) => {
-      // add all points and timestamp of a vehicle id
-      // [{"vehicle_id": , path:[[,],[],[]...], timestamps:[]},...]
-
       // process timestamp
       let currTimestamp = new Date(
         curr.properties.timestamp.substring(0, 19) // '2021-09-20 12:51:46-04:00'
@@ -41,7 +66,19 @@ export function getDataFromJson (rawData) {
 }
 
 // rawData: from api json
-// turn to [{position: [], vehicle_id: '', bearing: number, speedmph: number}, ...]
+/**
+ * turn to 
+ * [
+ *    {
+ *      position: [,], 
+ *      vehicle_id: '', 
+ *      bearing: number, 
+ *      speedmph: number
+ *     }, 
+ *      ...
+ * ]
+ */
+// 
 // 0:
 // bearing: 57.380756
 // position: (2) [-73.898728, 40.859144]
