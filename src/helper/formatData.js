@@ -88,7 +88,7 @@ export function getPointsFromJson (rawData) {
   return rawData.reduce(
     (accu, curr) => {
       // make up speed
-      let speed = Math.random() * 10;
+      let speed = Math.random() * 30;
 
       accu.push({
         position: curr.geometry.coordinates,

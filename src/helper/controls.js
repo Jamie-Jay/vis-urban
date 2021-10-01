@@ -4,18 +4,20 @@ import { mapStylePicker, layerControl } from './style';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-const BUS_ROUTES = ['Bx2', 'Bx4', 'Bx17', 'Bx19', 'M15'];
+// console.log(new Date(2021,8,1).getTime()) // 2021-9-1: 1630468800000
+export const START_TIME = 1630468800000;
+export const BUS_ROUTES = ['M15', 'Bx2', 'Bx4', 'Bx17', 'Bx19'];
 
 export const DATA_CONTROLS = {
   dataTime: {
     displayName: 'Date-Time',
     type: 'time-picker',
-    value: 1630468800000 // new Date(2021,8,1).getTime() // 2021-9-1: 1630468800000
+    value: START_TIME
   },
   busRoute: {
     displayName: 'Bus Route',
     type: 'selector',
-    value: 'Bx2'
+    value: BUS_ROUTES[0]
   }
 };
 
@@ -54,14 +56,14 @@ export const HEXAGON_CONTROLS = {
     type: 'boolean',
     value: false
   },
-  // radiusScale: {
-  //   displayName: 'Scatterplot Radius',
+  // radiusAmplifier: {
+  //   displayName: 'Scatterplot Radius Amplifier',
   //   type: 'range',
   //   value: 5,
   //   step: 5,
   //   min: 1,
-  //   max: 200
-  // }
+  //   max: 20
+  // },
   showGeoJson: {
     displayName: 'Show GeoJson',
     type: 'boolean',

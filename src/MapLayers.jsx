@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {StaticMap} from 'react-map-gl';
-import {AmbientLight, PointLight, LightingEffect, FlyToInterpolator} from '@deck.gl/core';
+import { StaticMap } from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 
 import { Trips } from './layers/Trips'
@@ -9,7 +8,7 @@ import { Hexagons } from './layers/Hexagons'
 import { GeoJson } from './layers/Geojson'
 import { tooltipStyle, layerControl } from './helper/style'; // Mouseover interaction
 
-import { MAPBOX_TOKEN } from './helper/constants'
+import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, DEFAULT_THEME } from './helper/constants'
 
 import {
   // MapStylePicker,
@@ -17,54 +16,6 @@ import {
   HEXAGON_CONTROLS,
   DATA_CONTROLS
 } from './helper/controls';
-
-const ambientLight = new AmbientLight({
-  color: [255, 255, 255],
-  intensity: 1.0
-});
-
-const pointLight = new PointLight({
-  color: [255, 255, 255],
-  intensity: 2.0,
-  position: [-74.05, 40.7, 8000]
-});
-
-const lightingEffect = new LightingEffect({ambientLight, pointLight});
-
-const material = {
-  ambient: 0.1,
-  diffuse: 0.6,
-  shininess: 32,
-  specularColor: [60, 64, 70]
-};
-
-const DEFAULT_THEME = {
-  buildingColor: [74, 80, 87],
-  trailColor0: [253, 128, 93],
-  trailColor1: [23, 184, 190],
-  material,
-  effects: [lightingEffect]
-};
-
-const INITIAL_VIEW_STATE = {
-  longitude: -73.905477,
-  latitude: 40.849802,
-  zoom: 13,
-  // minZoom: 5,
-  // maxZoom: 16,
-  pitch: 0,
-  bearing: 0,
-  // animation to centered on the new bus route
-  transitionInterpolator: new FlyToInterpolator({speed: 1.5}),
-  /**
-   * transitionInterpolator: FlyToInterpolator
-      props: {speed: 1.5, curve: 1.414}
-      _propsToCompare: (5) ['longitude', 'latitude', 'zoom', 'bearing', 'pitch']
-      _propsToExtract: (7) ['width', 'height', 'longitude', 'latitude', 'zoom', 'bearing', 'pitch']
-      _requiredProps: (5) ['width', 'height', 'latitude', 'longitude', 'zoom']
-  */
-  transitionDuration: 'auto'
-};
 
 // Trips can only be called in a function, it uses hooks
 export function MapLayers (props) {
@@ -103,7 +54,7 @@ export function MapLayers (props) {
       (
         object.properties ? // geojson format
           `
-          agency: ${object.properties.agency} \n\n
+          agency: ${object.properties.agency} \n
           bearing: ${object.properties.bearing} \n
           destination_name: ${object.properties.destination_name} \n
           direction: ${object.properties.direction} \n
@@ -117,7 +68,8 @@ export function MapLayers (props) {
           route_long: ${object.properties.route_long} \n
           trip_id: ${object.properties.trip_id} \n
           vehicle_id: ${object.properties.vehicle_id} \n
-          ` : object.vehicle_id // scatterplot format
+          ` 
+          : `${object.vehicle_id} bearing: ${object.bearing}` // scatterplot format
       )
     : null;
 
@@ -129,7 +81,6 @@ export function MapLayers (props) {
 
   useEffect(() => {
     if (geojson.length > 0 && geojson[0].geometry && geojson[0].geometry.coordinates) {
-      console.log(geojson[0].properties.route_long)
       setViewState(
         {
           ... INITIAL_VIEW_STATE,

@@ -1,3 +1,5 @@
+import {AmbientLight, PointLight, LightingEffect, FlyToInterpolator} from '@deck.gl/core';
+
 export const MAPBOX_TOKEN = 'pk.eyJ1IjoiamFtaWVqYXkiLCJhIjoiY2t1NXRmeWlnMW5kZjMwcWgzYWtxMDU5dCJ9.bT4fctFkg1XCdh_FeNy8PQ'
 // JSON.stringify(process.env.MapboxAccessToken);
 
@@ -27,3 +29,51 @@ export const COLOR_PALETTE = [
   [0x4E, 0x2F, 0x9C],
   [0x60, 0x30, 0x99],
 ];
+
+const ambientLight = new AmbientLight({
+  color: [255, 255, 255],
+  intensity: 1.0
+});
+
+const pointLight = new PointLight({
+  color: [255, 255, 255],
+  intensity: 2.0,
+  position: [-74.05, 40.7, 8000]
+});
+
+const lightingEffect = new LightingEffect({ambientLight, pointLight});
+
+const material = {
+  ambient: 0.1,
+  diffuse: 0.6,
+  shininess: 32,
+  specularColor: [60, 64, 70]
+};
+
+export const DEFAULT_THEME = {
+  buildingColor: [74, 80, 87],
+  trailColor0: [253, 128, 93],
+  trailColor1: [23, 184, 190],
+  material,
+  effects: [lightingEffect]
+};
+
+export const INITIAL_VIEW_STATE = {
+  longitude: -73.905477,
+  latitude: 40.849802,
+  zoom: 13,
+  // minZoom: 5,
+  // maxZoom: 16,
+  pitch: 0,
+  bearing: 0,
+  // animation to centered on the new bus route
+  transitionInterpolator: new FlyToInterpolator({speed: 1.5}),
+  /**
+   * transitionInterpolator: FlyToInterpolator
+      props: {speed: 1.5, curve: 1.414}
+      _propsToCompare: (5) ['longitude', 'latitude', 'zoom', 'bearing', 'pitch']
+      _propsToExtract: (7) ['width', 'height', 'longitude', 'latitude', 'zoom', 'bearing', 'pitch']
+      _requiredProps: (5) ['width', 'height', 'latitude', 'longitude', 'zoom']
+  */
+  transitionDuration: 'auto'
+};

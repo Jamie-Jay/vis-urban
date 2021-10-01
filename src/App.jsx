@@ -1,11 +1,9 @@
 import React from 'react';
 import { MapLayers } from './MapLayers'
-import { MapStylePicker } from './helper/controls';
+import { MapStylePicker, START_TIME, BUS_ROUTES } from './helper/controls';
 import { getDataFromJson, getPointsFromJson } from './helper/formatData'
 import { layerControl } from './helper/style';
 
-// console.log(new Date(2021,8,1).getTime()) // 2021-9-1: 1630468800000
-const START_TIME = 1630468800000;
 const BASE_URL_CAMPUS = 'http://10.92.214.223/';
 const BASE_URL = 'http://api.buswatcher.org/';
 
@@ -31,17 +29,16 @@ export default class App extends React.Component{
     points: [],
     style: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
     selectedTimeStamp: START_TIME,
-    busRoute: 'Bx2' 
+    busRoute: BUS_ROUTES[0]
     // TODO: multiple select - singapore bus example
   }
 
   componentDidMount(){
-    this.getApiData (START_TIME, 'Bx2')
+    this.getApiData (this.state.selectedTimeStamp, this.state.busRoute)
   }
 
    getApiData = async (selectedTimeStamp, busRoute, readLocalFile = false) => {
     // combine url
-    // const { selectedTimeStamp, busRoute } = this.state
     const urlStr = readLocalFile ? './geojson.json' : getUrl(selectedTimeStamp, busRoute)
     // console.log(urlStr)
 

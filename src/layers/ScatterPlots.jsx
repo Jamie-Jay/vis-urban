@@ -1,6 +1,7 @@
-import { ScatterplotLayer } from 'deck.gl';
+// import { ScatterplotLayer } from 'deck.gl';
+import CustomScatterplotLayer from './ScatterArrowPlot';
 
-const PICKUP_COLOR = [114, 19, 108];
+const SCATTER_COLOR = [0, 128, 255];
 
 export const ScatterPlots = (props) => {
 
@@ -9,12 +10,14 @@ export const ScatterPlots = (props) => {
   return [
     settings.showScatterplot &&
     data &&
-      new ScatterplotLayer({
+      new CustomScatterplotLayer({
         id: 'scatterplot',
         getPosition: d => d.position,
-        getColor: d => PICKUP_COLOR,
+        getFillColor: d => SCATTER_COLOR,
+        getLineColor: d => SCATTER_COLOR,
         getRadius: d => d.speedmph,
-        // radiusScale: settings.radiusScale,
+        // accessor for custom layer
+        getAngle: d => d.bearing / 180 * Math.PI,
         opacity: 0.5,
         pickable: true,
         radiusMinPixels: 0.25,
