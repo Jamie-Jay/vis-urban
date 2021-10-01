@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {StaticMap} from 'react-map-gl';
 import {AmbientLight, PointLight, LightingEffect, FlyToInterpolator} from '@deck.gl/core';
 import DeckGL from '@deck.gl/react';
@@ -127,6 +127,22 @@ export function MapLayers (props) {
   // fly to centering on the new bus routes
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
 
+  useEffect(() => {
+    if (geojson.length > 0 && geojson[0].geometry && geojson[0].geometry.coordinates) {
+      console.log(geojson[0].properties.route_long)
+      setViewState(
+        {
+          ... INITIAL_VIEW_STATE,
+          longitude: geojson[0].geometry.coordinates[0], // bus trips' center geo: get the middle of max and min geo, or for simplicity, cencented on the first point
+          latitude: geojson[0].geometry.coordinates[1],
+        }
+      )              
+    }
+    return () => {
+      // cleanup
+    }
+  }, [geojson])
+
   let triplayers = Trips({
     tripPath: trips,
     settings: settings,
@@ -175,16 +191,9 @@ export function MapLayers (props) {
             [settingName]: newValue
           });
           if (settingName === 'dataTime') {
-            getSelectedTime(newValue)
+            getSelectedTime(newValue);
           } else if (settingName === 'busRoute') {
             getSelectedRoute(newValue);
-            setViewState(
-              {
-                ... INITIAL_VIEW_STATE,
-                longitude: geojson[0].geometry.coordinates[0], // bus trips' center geo: get the middle of max and min geo, or for simplicity, cencented on the first point
-                latitude: geojson[0].geometry.coordinates[1]
-              }
-            )
           }
         }}
       />
@@ -194,11 +203,6 @@ export function MapLayers (props) {
         effects={DEFAULT_THEME.effects}
         initialViewState={viewState}
         controller={true} // for a map to be interactive, using the default MapController https://deck.gl/#/documentation/deckgl-api-reference/controllers/controller?section=event-handling
-        // getCursor={() => 'default'}
-        // onViewStateChange={ 
-        //   (nextViewState) => {
-        //     setViewState(nextViewState.viewState);
-        // }
       >
         {/* By using react-map-gl as a child component to the DeckGL class, 
         DeckGL will keep the underlying map view in-sync with the data visualization layers. 

@@ -90,25 +90,26 @@ export const Trips = ({
       shadowEnabled: false,
       // onHover,
       // ...settings
-    })
-  ];
-
-  layers.push(
+    }),
     // time bar
-    <div style={{ width: '100%', marginTop: "1.5rem" }}>
-      <b>Trip Trace Controller</b>
-      <input
-        style={{ width: '100%' }}
-        type="range"
-        min={minTime}
-        max={maxTime}
-        step="0.1"
-        value={time}
-        onChange={(e) => { setTime(Number(e.target.value)); }}
-      />
-      Time: {time}
-    </div>
-  )
+    settings.showTripTrace &&
+    tripPath.length > 0 &&
+    (
+      <div style={{ width: '100%', marginTop: "1.5rem" }}>
+        <b>Trip Trace Controller</b>
+        <input
+          style={{ width: '100%' }}
+          type="range"
+          min={minTime}
+          max={maxTime}
+          step="0.1"
+          value={time}
+          onChange={(e) => { setTime(Number(e.target.value)); }}
+        />
+        Time: {time}
+      </div>
+    )
+  ];
 
   return layers;
 }
