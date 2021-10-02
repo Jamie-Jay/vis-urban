@@ -71,41 +71,21 @@ varying vec4 vLineColor;
 varying vec2 unitPosition;
 varying float innerUnitRadius;
 varying float outerRadiusPixels;
+varying float vAlpha; // added
 
 void main(void) {
   geometry.uv = unitPosition;
   
   // // a cross
   // if (abs(unitPosition.x) < 0.2 || abs(unitPosition.y) < 0.2) {
-  //   gl_FragColor = vFillColor;
+  //   gl_FragColor = vec4(vFillColor.rgb, vAlpha);
   // } else {
   //   discard;
   // }
   
   // An arrow head
   if (unitPosition.x < 1.0 - abs(unitPosition.y) * 4.0) {
-    gl_FragColor = vFillColor;
-  } else {
-    discard;
-  }
-
-  float distToCenter = length(unitPosition) * outerRadiusPixels;
-      
-  if (stroked > 0.5) {
-    float isLine = antialiasing ? 
-      smoothedge(innerUnitRadius * outerRadiusPixels, distToCenter) :
-      step(innerUnitRadius * outerRadiusPixels, distToCenter);
-
-    if (filled) {
-      gl_FragColor = mix(vFillColor, vLineColor, isLine);
-    } else {
-      if (isLine == 0.0) {
-        discard;
-      }
-      gl_FragColor = vec4(vLineColor.rgb, vLineColor.a * isLine);
-    }
-  } else if (filled) {
-    gl_FragColor = vFillColor;
+    gl_FragColor = vec4(vFillColor.rgb, vAlpha);
   } else {
     discard;
   }
@@ -193,6 +173,7 @@ attribute vec4 instanceFillColors;
 attribute vec4 instanceLineColors;
 attribute vec3 instancePickingColors;
 attribute float instanceAngles;
+attribute float instanceTimes;
 
 uniform float opacity;
 uniform float radiusScale;
@@ -204,12 +185,14 @@ uniform float lineWidthMaxPixels;
 uniform float stroked;
 uniform bool filled;
 uniform bool billboard;
+// uniform float currentTime;
 
 varying vec4 vFillColor;
 varying vec4 vLineColor;
 varying vec2 unitPosition;
 varying float innerUnitRadius;
 varying float outerRadiusPixels;
+varying float vAlpha; // an opacity value, how vertex shader can send data to the fragment shader
 
 // user specified angle
 vec3 rotateZ(vec3 vector, float angle) {
@@ -256,6 +239,8 @@ void main(void) {
   DECKGL_FILTER_COLOR(vFillColor, geometry);
   vLineColor = vec4(instanceLineColors.rgb, instanceLineColors.a * opacity);
   DECKGL_FILTER_COLOR(vLineColor, geometry);
+
+  vAlpha = instanceTimes; //1.0 - abs(instanceTimes - currentTime) / 3600; // the opacity peaks at 1.0 (100%) when pick up time is the current time, and gradually fades out. Each instance is only visible if it was picked up within 1 hour of the current time.
 }
 `;
 
@@ -271,8 +256,9 @@ export default class CustomScatterplotLayer extends ScatterplotLayer {
     return {
       // replace the default fragment shader
       ...super.getShaders(),
+      // make each icon at pickup spot an arrow pointing to the direction that the rider is going.
       fs: customFragmentShader,
-      // vertex shader, which is run to calculate the positions of vertices
+      // Attributes are accessible from the vertex shader, which is run to calculate the positions of vertices
       vs: customVertexShader
     }
   }
@@ -284,7 +270,18 @@ export default class CustomScatterplotLayer extends ScatterplotLayer {
     
     // adds a new instanced attribute instanceAngles, that is automatically filled with the accessor Layer.prop.getAngle. The attributeManager is automatically created for every layer.
     this.state.attributeManager.addInstanced({
-      instanceAngles: {size: 1, accessor: 'getAngle'}
+      instanceAngles: {size: 1, accessor: 'getAngle'},
+      // http://vis.academy/#/custom-layers/5-custom-uniform
+      instanceTimes: {size: 1, accessor: 'getTime'}
     });
   }
+
+  // // override the updateState lifecycle mothod and send a new uniform currentTime to the layer's model
+  // updateState({props}) {
+  //   super.updateState(...arguments);
+
+  //   this.state.model.setUniforms({
+  //     currentTime: props.currentTime
+  //   });
+  // }
 }

@@ -54,6 +54,7 @@ export function MapLayers (props) {
       (
         object.properties ? // geojson format
           `
+          ${object.properties.vehicle_id} \n
           agency: ${object.properties.agency} \n
           bearing: ${object.properties.bearing} \n
           destination_name: ${object.properties.destination_name} \n
@@ -67,9 +68,10 @@ export function MapLayers (props) {
           origin_id: ${object.properties.origin_id} \n
           route_long: ${object.properties.route_long} \n
           trip_id: ${object.properties.trip_id} \n
-          vehicle_id: ${object.properties.vehicle_id} \n
           ` 
-          : `${object.vehicle_id} bearing: ${object.bearing}` // scatterplot format
+          : `${object.vehicle_id} \n
+            bearing: ${object.bearing}
+            speed: ${object.speedmph}` // scatterplot format
       )
     : null;
 

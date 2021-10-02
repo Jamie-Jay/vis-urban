@@ -72,6 +72,7 @@ export function getDataFromJson (rawData) {
  *    {
  *      position: [,], 
  *      vehicle_id: '', 
+ *      timestamp: ,
  *      bearing: number, 
  *      speedmph: number
  *     }, 
@@ -87,13 +88,20 @@ export function getDataFromJson (rawData) {
 export function getPointsFromJson (rawData) {
   return rawData.reduce(
     (accu, curr) => {
+
+      // process timestamp
+      let currTimestamp = new Date(
+        curr.properties.timestamp.substring(0, 19) // '2021-09-20 12:51:46-04:00'
+        );
+      currTimestamp = currTimestamp.getMinutes() * 60 + currTimestamp.getSeconds();
+
       // make up speed
       let speed = Math.random() * 30;
 
       accu.push({
         position: curr.geometry.coordinates,
         vehicle_id: curr.properties.vehicle_id,
-        // time: time,
+        timestamp: currTimestamp,
         bearing: curr.properties.bearing,
         speedmph: speed
       })
