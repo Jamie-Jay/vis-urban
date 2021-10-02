@@ -101,14 +101,15 @@ export function MapLayers (props) {
     settings: settings,
     // onHover: hover => _onHover(hover)
   });
-  // console.log(triplayers)
-  let layers = [triplayers[0]]
-  layers = layers.concat(
-    ScatterPlots({
-      data: points, 
-      settings: settings,
-      onHover: hover => _onHover(hover)
-    })
+
+  let scatterlayers = ScatterPlots({
+    data: points, 
+    settings: settings,
+    onHover: hover => _onHover(hover)
+  });
+
+  let layers = [triplayers[0]].concat(
+    [scatterlayers[0]]
   ).concat(
     Hexagons({
       data: points,
@@ -170,6 +171,7 @@ export function MapLayers (props) {
       </DeckGL>
       <span style={{...layerControl, top: '0px', right: '300px'}}>
         {triplayers[1]}  
+        {scatterlayers[1]}
       </span>
     </div>
 

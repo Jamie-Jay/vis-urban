@@ -56,11 +56,11 @@ void main(void) {
   DECKGL_FILTER_COLOR(gl_FragColor, geometry);
 }
 `;*/
-
+// color of points
 const customFragmentShader = `\
 #define SHADER_NAME scatterplot-layer-fragment-shader
 
-precision highp float;
+precision highp float; // precision float uses when calc
 
 uniform bool filled;
 uniform float stroked;
@@ -160,6 +160,15 @@ void main(void) {
 }
 `;*/
 
+// positions of things
+// attribute: pass in data to shader
+// uniform: pass in data to shader, available to both vertex and fragment shader
+// vec2, vec3, vec4: 2,3,4 float points
+// vertex: need to set gl_Position to a vec4
+// fragment: need to set gl_FragColor to a vec4
+// https://www.jianshu.com/p/8d297451ac38
+// 只有Vertex Shader可以声明attribute变量，它用来接受CPU传递过来的顶点数据。除了attribute变量之外，还可以声明uniform变量和varying变量。
+// Fragment Shader除了attribute变量其他变量都可以拥有，varying变量必须和Vertex Shader中的varying变量类型保持一致，varying变量会从Vertex Shader传递到Fragment Shader中。那么问题来了，Vertex Shader是每个顶点调用一次，而Fragment Shader是每个像素调用一次
 const customVertexShader = `
 #define SHADER_NAME scatterplot-layer-vertex-shader
 
@@ -185,7 +194,7 @@ uniform float lineWidthMaxPixels;
 uniform float stroked;
 uniform bool filled;
 uniform bool billboard;
-// uniform float currentTime;
+uniform float currentTime;
 
 varying vec4 vFillColor;
 varying vec4 vLineColor;
@@ -240,7 +249,9 @@ void main(void) {
   vLineColor = vec4(instanceLineColors.rgb, instanceLineColors.a * opacity);
   DECKGL_FILTER_COLOR(vLineColor, geometry);
 
-  vAlpha = instanceTimes; //1.0 - abs(instanceTimes - currentTime) / 3600; // the opacity peaks at 1.0 (100%) when pick up time is the current time, and gradually fades out. Each instance is only visible if it was picked up within 1 hour of the current time.
+  vAlpha = 1.0 - abs(instanceTimes - currentTime) / 24.0; 
+  // the opacity peaks at 1.0 (100%) when pick up time is the current time, and gradually fades out. 
+  // Each instance is only visible if it was picked up within 1 hour of the current time.
 }
 `;
 
@@ -276,12 +287,12 @@ export default class CustomScatterplotLayer extends ScatterplotLayer {
     });
   }
 
-  // // override the updateState lifecycle mothod and send a new uniform currentTime to the layer's model
-  // updateState({props}) {
-  //   super.updateState(...arguments);
+  // override the updateState lifecycle mothod and send a new uniform currentTime to the layer's model
+  updateState({props}) {
+    super.updateState(...arguments);
 
-  //   this.state.model.setUniforms({
-  //     currentTime: props.currentTime
-  //   });
-  // }
+    this.state.model.setUniforms({
+      currentTime: props.currentTime
+    });
+  }
 }
