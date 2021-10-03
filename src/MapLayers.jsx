@@ -3,12 +3,14 @@ import { StaticMap } from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 
 import { Trips } from './layers/Trips'
-// import { ScatterPlots } from './layers/ScatterPlots'
+import { ScatterPlots } from './layers/ScatterPlots'
 import { Hexagons } from './layers/Hexagons'
 import { GeoJson } from './layers/Geojson'
 import { tooltipStyle, layerControl } from './helper/style'; // Mouseover interaction
 
 import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, DEFAULT_THEME } from './helper/constants'
+
+import { WithTime } from "./helper/Timer";
 
 import {
   // MapStylePicker,
@@ -22,7 +24,7 @@ export function MapLayers (props) {
   // trips={this.state.data} points={this.state.points} mapStyle={this.state.style}
   const {trips, points, geojson, mapStyle, getSelectedTime, getSelectedRoute} = props
 
-  // reading setting from HEXAGON_CONTROLS and DATA_CONTROLS
+  // reading setting from LAYER_CONTROLS and DATA_CONTROLS
   const settings1 = Object.keys(LAYER_CONTROLS).reduce(
     (accu, key) => ({
       ...accu,
@@ -39,6 +41,7 @@ export function MapLayers (props) {
 
   const [settings, setSettings] = useState(settings1);
 
+  // hover content
   const [hover, setHover] = useState(
     {
       x: 0,
@@ -96,22 +99,40 @@ export function MapLayers (props) {
     }
   }, [geojson])
 
-  let triplayers = Trips({
+  // time sync and control
+  const [minTime, setMinTime] = useState(0);
+  const [maxTime, setMaxTime] = useState(1800);
+  useEffect(
+    () => {
+      const timestamps = points.reduce(
+        (ts, trip) => {
+          ts.push(trip.timestamp);
+          return ts; 
+        },
+        []
+      );
+    
+      setMinTime(Math.min(...timestamps));
+      setMaxTime(Math.max(...timestamps));
+    },
+    [points]
+  )
+
+  const currentTimeObj = WithTime(maxTime)
+
+  // get layers
+  let layers = Trips({
     tripPath: trips,
-    data: points,
+    currentTime: currentTimeObj.getCurrentTime(),
     settings: settings,
     onHover: hover => _onHover(hover)
-  });
-
-  // let scatterlayers = ScatterPlots({
-  //   data: points, 
-  //   settings: settings,
-  //   onHover: hover => _onHover(hover)
-  // });
-
-  let layers = [triplayers[0]].concat(
-    // [scatterlayers[0]]
-    [triplayers[1]]
+  }).concat(
+    ScatterPlots({
+      data: points, 
+      currentTime: currentTimeObj.getCurrentTime(),
+      settings: settings,
+      onHover: hover => _onHover(hover)
+    })
   ).concat(
     Hexagons({
       data: points,
@@ -171,83 +192,26 @@ export function MapLayers (props) {
           preventStyleDiffing={true} 
         />
       </DeckGL>
-      <span style={{...layerControl, top: '0px', right: '300px'}}>
-        {triplayers[2]}  
-        {/* {scatterlayers[1]} */}
-      </span>
+      {
+        (settings.showScatterplot || settings.showTripTrace) ?
+          <span style={{...layerControl, top: '0px', right: '300px'}}>
+          <div style={{ width: '100%', marginTop: "1.5rem" }}>
+            <b>Trace & Scatterplot Controller</b>
+            <input
+              style={{ width: '100%' }}
+              type="range"
+              min={minTime}
+              max={maxTime}
+              step="0.1"
+              value={currentTimeObj.getCurrentTime()}
+              readOnly
+              onChange={ e => { currentTimeObj.setCurrentTime(Number(e.target.value)); }}
+            />
+            Time: {currentTimeObj.getCurrentTime()}
+          </div>
+        </span>
+        : null
+      }
     </div>
-
   );
 }
-
-
-/*
-export default class ParentLayers extends React.Component {
-
-  state = {
-    settings: Object.keys(SCATTERPLOT_CONTROLS).reduce(
-      (accu, key) => ({
-        ...accu,
-        [key]: SCATTERPLOT_CONTROLS[key].value
-      }),
-      {}
-    ),
-    hover: {
-      x: 0,
-      y: 0,
-      hoveredObject: null
-    },
-  };
-
-  _updateLayerSettings(settings) {
-    this.setState({ settings });
-  }
-
-  _onHover({ x, y, object }) {
-    const label = object ? (object.vehicle_id) : null;
-    this.setState({ hover: { x, y, hoveredObject: object, label } });
-  }
-
-  // let layers = Trips({tripPath: this.props.trips}).concat(ScatterPlots({data: this.props.trips}));
-  // let layers = ScatterPlots({data: this.props.trips}).concat(Trips({tripPath: this.props.trips}));
-  render(){
-    let layers = ScatterPlots({
-      data: this.props.points, 
-      settings: this.state.settings,
-      onHover: hover => this._onHover(hover)
-    });
-
-    const {trips, points, mapStyle, hover, settings} = this.props;
-
-    // console.log(layers)
-
-    return (
-      <div>
-         {hover.hoveredObject && (
-           <div
-             style={{
-               ...tooltipStyle,
-               transform: `translate(${hover.x}px, ${hover.y}px)`
-             }}
-           >
-             <div>{hover.label}</div>
-           </div>
-         )}
-        <LayerControls
-          settings={this.state.settings}
-          propTypes={SCATTERPLOT_CONTROLS}
-          onChange={settings => this._updateLayerSettings(settings)}
-        />
-        <DeckGL
-          layers={layers}
-          effects={DEFAULT_THEME.effects}
-          initialViewState={INITIAL_VIEW_STATE}
-          controller={true}
-        >
-          <StaticMap reuseMaps mapStyle={this.props.mapStyle} preventStyleDiffing={true} />
-        </DeckGL>      
-      </div>
-
-    );
-  }
-}*/
