@@ -21,7 +21,30 @@ export const DATA_CONTROLS = {
   }
 };
 
-export const HEXAGON_CONTROLS = {
+export const LAYER_CONTROLS = {
+  showTripTrace: {
+    displayName: 'Show Trip Trace',
+    type: 'boolean',
+    value: true
+  },
+  showScatterplot: {
+    displayName: 'Show Scatterplot',
+    type: 'boolean',
+    value: true
+  },
+  // radiusAmplifier: {
+  //   displayName: 'Scatterplot Radius Amplifier',
+  //   type: 'range',
+  //   value: 5,
+  //   step: 5,
+  //   min: 1,
+  //   max: 20
+  // },
+  showGeoJson: {
+    displayName: 'Show GeoJson',
+    type: 'boolean',
+    value: false
+  },
   showHexagon: {
     displayName: 'Show Hexagon',
     type: 'boolean',
@@ -50,30 +73,7 @@ export const HEXAGON_CONTROLS = {
     step: 0.1,
     min: 80,
     max: 100
-  },
-  showScatterplot: {
-    displayName: 'Show Scatterplot',
-    type: 'boolean',
-    value: false
-  },
-  // radiusAmplifier: {
-  //   displayName: 'Scatterplot Radius Amplifier',
-  //   type: 'range',
-  //   value: 5,
-  //   step: 5,
-  //   min: 1,
-  //   max: 20
-  // },
-  showGeoJson: {
-    displayName: 'Show GeoJson',
-    type: 'boolean',
-    value: true
-  },
-  showTripTrace: {
-    displayName: 'Show Trip Trace',
-    type: 'boolean',
-    value: true
-  },
+  }
 };
 
 export const SCATTERPLOT_CONTROLS = {

@@ -249,9 +249,12 @@ void main(void) {
   vLineColor = vec4(instanceLineColors.rgb, instanceLineColors.a * opacity);
   DECKGL_FILTER_COLOR(vLineColor, geometry);
 
-  vAlpha = 1.0 - abs(instanceTimes - currentTime) / 24.0; 
+  // if (instanceTimes >= currentTime)
+  vAlpha = 1.0 - abs(instanceTimes - currentTime) / 60.0;
+  // else
+  // vAlpha = 0.0;
   // the opacity peaks at 1.0 (100%) when pick up time is the current time, and gradually fades out. 
-  // Each instance is only visible if it was picked up within 1 hour of the current time.
+  // Each instance is only visible if it was picked up within 1 minute of the current time.
 }
 `;
 

@@ -3,7 +3,7 @@ import { StaticMap } from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 
 import { Trips } from './layers/Trips'
-import { ScatterPlots } from './layers/ScatterPlots'
+// import { ScatterPlots } from './layers/ScatterPlots'
 import { Hexagons } from './layers/Hexagons'
 import { GeoJson } from './layers/Geojson'
 import { tooltipStyle, layerControl } from './helper/style'; // Mouseover interaction
@@ -13,7 +13,7 @@ import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, DEFAULT_THEME } from './helper/consta
 import {
   // MapStylePicker,
   LayerControls, // create settings for our scatterplot layer
-  HEXAGON_CONTROLS,
+  LAYER_CONTROLS,
   DATA_CONTROLS
 } from './helper/controls';
 
@@ -23,10 +23,10 @@ export function MapLayers (props) {
   const {trips, points, geojson, mapStyle, getSelectedTime, getSelectedRoute} = props
 
   // reading setting from HEXAGON_CONTROLS and DATA_CONTROLS
-  const settings1 = Object.keys(HEXAGON_CONTROLS).reduce(
+  const settings1 = Object.keys(LAYER_CONTROLS).reduce(
     (accu, key) => ({
       ...accu,
-      [key]: HEXAGON_CONTROLS[key].value
+      [key]: LAYER_CONTROLS[key].value
     }),
     Object.keys(DATA_CONTROLS).reduce(
       (accu, key) => ({
@@ -98,18 +98,20 @@ export function MapLayers (props) {
 
   let triplayers = Trips({
     tripPath: trips,
-    settings: settings,
-    // onHover: hover => _onHover(hover)
-  });
-
-  let scatterlayers = ScatterPlots({
-    data: points, 
+    data: points,
     settings: settings,
     onHover: hover => _onHover(hover)
   });
 
+  // let scatterlayers = ScatterPlots({
+  //   data: points, 
+  //   settings: settings,
+  //   onHover: hover => _onHover(hover)
+  // });
+
   let layers = [triplayers[0]].concat(
-    [scatterlayers[0]]
+    // [scatterlayers[0]]
+    [triplayers[1]]
   ).concat(
     Hexagons({
       data: points,
@@ -138,7 +140,7 @@ export function MapLayers (props) {
       )}
       <LayerControls
         settings={settings}
-        propTypes={{...HEXAGON_CONTROLS, ...DATA_CONTROLS}}
+        propTypes={{...LAYER_CONTROLS, ...DATA_CONTROLS}}
         onChange={(settingName, newValue) => {
           setSettings({
             ...settings,
@@ -170,8 +172,8 @@ export function MapLayers (props) {
         />
       </DeckGL>
       <span style={{...layerControl, top: '0px', right: '300px'}}>
-        {triplayers[1]}  
-        {scatterlayers[1]}
+        {triplayers[2]}  
+        {/* {scatterlayers[1]} */}
       </span>
     </div>
 

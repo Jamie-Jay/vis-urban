@@ -2,14 +2,16 @@ import React, {useState, useEffect} from 'react';
 import {TripsLayer} from '@deck.gl/geo-layers';
 // import {PolygonLayer} from '@deck.gl/layers';
 import { COLOR_PALETTE } from '../helper/constants'
+import CustomScatterplotLayer from './ScatterArrowPlot';
 
 export const Trips = ({
   tripPath,
+  data,
+  onHover = null,
   trailLength = 180,
   loopLength = 1800, // unit corresponds to the timestamp in source data
   animationSpeed = 1,
-  settings = null,
-  onHover = null
+  settings = null
 }) => {
   // The key in all of this is the currentTime variable. 
   // This variable tells DeckGL which path coordinate to render, based on the the corresponding timestamp.
@@ -78,7 +80,7 @@ export const Trips = ({
       data: tripPath,
       getPath: d => d.path,
       getTimestamps: d => d.timestamps,
-      getColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24], // (d.vendor === 0 ? theme.trailColor0 : theme.trailColor1),
+      getColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24],
       opacity: 0.3,
       widthMinPixels: 2,
       widthMaxPixels: 10,
@@ -89,6 +91,26 @@ export const Trips = ({
 
       shadowEnabled: false,
       // onHover,
+      // ...settings
+    }),
+  settings.showScatterplot &&
+    new CustomScatterplotLayer({
+      id: 'scatterplot',
+      getPosition: d => d.position,
+      getFillColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24],
+      getLineColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24],
+      getRadius: d => d.speedmph * 3,
+      // accessor for custom layer
+      getAngle: d => d.bearing / 180 * Math.PI,
+      getTime: d => d.timestamp,
+      // getTime: d => { 1.0 - Math.abs(d.timestamp - time) / 3600 },
+      currentTime: time,
+      opacity: 0.5,
+      pickable: true,
+      radiusMinPixels: 0.25,
+      radiusMaxPixels: 30,
+      data,
+      onHover,
       // ...settings
     }),
     // time bar
