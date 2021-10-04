@@ -4,9 +4,11 @@ import { mapStylePicker, layerControl } from './style';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
+import { NYC_BUS_ROUTES_BY_COLOR } from './BusRoutes'
+
 // console.log(new Date(2021,8,1).getTime()) // 2021-9-1: 1630468800000
 export const START_TIME = 1630468800000;
-export const BUS_ROUTES = ['M15', 'Bx2', 'Bx4', 'Bx17', 'Bx19'];
+export const BUS_ROUTES = ['M15', 'Bx4', 'Bx17', 'Bx19'];
 
 export const DATA_CONTROLS = {
   dataTime: {
@@ -14,10 +16,10 @@ export const DATA_CONTROLS = {
     type: 'time-picker',
     value: START_TIME
   },
-  busRoute: {
+  busRoutes: {
     displayName: 'Bus Route',
-    type: 'selector',
-    value: BUS_ROUTES[0]
+    type: 'multi-selector',
+    value: [BUS_ROUTES[0]]
   }
 };
 
@@ -168,6 +170,52 @@ export function MapStylePicker({ currentStyle, onStyleChange }) {
   );
 }
 
+export class DataSourceControls extends Component {
+
+  state = {
+    dataTime: this.props.settings.dataTime,
+    busRoutes: this.props.settings.busRoutes
+  }
+
+  _onValueChange = (settingName, newValue) => {
+    const { settings } = this.props;
+    if (settings[settingName] !== newValue) {
+      this.setState({
+        [settingName]: newValue
+      })
+    }
+  }
+
+  handleClick = () => {
+    this.props.onChange(this.state);
+  }
+
+  render() {
+    const { title, settings, propTypes = {} } = this.props;
+
+    return (
+      <div>
+        {title && <h4>{title}</h4>}
+        {Object.keys(propTypes).map(key => (
+          <div key={key}>
+            <label>{propTypes[key].displayName}</label>
+            <div style={{ display: 'inline-block', float: 'right' }}>
+              {settings[key]}
+            </div>
+            <Setting
+              settingName={key}
+              value={this.state[key]}
+              propType={propTypes[key]}
+              onChange={this._onValueChange}
+            />
+          </div>
+        ))}
+      <button style={{ display: 'inline-block', float: 'right' }} onClick={this.handleClick}>Data OK</button>
+      </div>
+    )
+  }
+}
+
 export class LayerControls extends Component {
   _onValueChange = (settingName, newValue) => {
     const { settings } = this.props;
@@ -182,9 +230,9 @@ export class LayerControls extends Component {
     const { title, settings, propTypes = {} } = this.props;
 
     return (
-      <div className="layer-controls" style ={layerControl}>
+      <div>
         {title && <h4>{title}</h4>}
-        {Object.keys(settings).map(key => (
+        {Object.keys(propTypes).map(key => (
           <div key={key}>
             <label>{propTypes[key].displayName}</label>
             <div style={{ display: 'inline-block', float: 'right' }}>
@@ -213,8 +261,11 @@ const Setting = props => {
       case 'boolean':
         return <Checkbox {...props} />;
 
-      case 'selector':
-        return <Selector {...props} />;
+      case 'single-selector':
+        return <SingleSelector {...props} />;
+
+      case 'multi-selector':
+        return <MultiSelector {...props} />;
 
       case 'time-picker':
         return <TimePicker {...props} />;
@@ -263,12 +314,12 @@ const Slider = ({ settingName, value, propType, onChange }) => {
 };
 
 // single pick
-const Selector = ({ settingName, value, onChange }) => {
+const SingleSelector = ({ settingName, value, onChange }) => {
   return (
     <div key={settingName}>
       <div className="input-group">
         <select
-          type='selector'
+          type='select-one'
           value={value}
           onChange={e => onChange(settingName, e.target.value)}
         >
@@ -277,6 +328,60 @@ const Selector = ({ settingName, value, onChange }) => {
               {route}
             </option>
           ))}
+        </select>
+      </div>
+    </div>
+  );
+}
+
+// multiple pick
+const MultiSelector = ({ settingName, value, onChange }) => {
+	const changeOptions = () => {
+    value = []
+    let obj = document.getElementById("multi-selector");
+		for(let i = 0; i < obj.options.length; i++){
+			if(obj.options[i].selected){
+			  value.push(obj.options[i].value); // collect all selected options
+			}
+		}
+
+    onChange(settingName, value)
+  }
+
+  return (
+    <div key={settingName}>
+      <div className="input-group">
+        <select
+          type='select-multiple'
+          id="multi-selector"
+          multiple
+          size={5}
+          onChange={ changeOptions }
+          >
+          <optgroup key='Common' label='Common'>
+            {
+              BUS_ROUTES.map(route => (
+                <option key={route} value={route}>
+                  {route}
+                </option>
+              ))
+            }
+          </optgroup>
+
+          {
+            Object.keys(NYC_BUS_ROUTES_BY_COLOR).map((key,i)=>{
+              var items = NYC_BUS_ROUTES_BY_COLOR[key].map((s,index)=>{
+                return (
+                  <option key={index} style={{color: {key}}}>{s.route_id}</option>
+                )
+              })
+              return(
+                <optgroup key={key} label={key}>
+                  {items}
+                </optgroup> 
+              )
+            })
+          }
         </select>
       </div>
     </div>

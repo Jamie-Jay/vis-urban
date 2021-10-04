@@ -24,20 +24,18 @@ function getUrl(selectedTimeStamp, busRoute) {
 export default class App extends React.Component{
 
   state = {
-    dataJson: [],
-    data: [],
-    points: [],
+    dataJsonCollection: [], // store all the raw json from api - [ bus-timestamp: {json}, bus-timestamp: {json}...]
+    dataToShow: [],
     style: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
     selectedTimeStamp: START_TIME,
-    busRoute: BUS_ROUTES[0]
-    // TODO: multiple select - singapore bus example
+    busRoutes: BUS_ROUTES
   }
 
   componentDidMount(){
-    this.getApiData (this.state.selectedTimeStamp, this.state.busRoute)
+    this.updateDataCollection(this.state.selectedTimeStamp, this.state.busRoutes)
   }
 
-   getApiData = async (selectedTimeStamp, busRoute, readLocalFile = false) => {
+  getApiData = async (selectedTimeStamp, busRoute, readLocalFile = false) => {
     // combine url
     const urlStr = readLocalFile ? './geojson.json' : getUrl(selectedTimeStamp, busRoute)
     // console.log(urlStr)
@@ -49,25 +47,37 @@ export default class App extends React.Component{
         'Accept': 'application/json'
         },
     })
-    .then(response => response.json())// Promise
+    .then(response => response.json()) // Promise
     .then(data => {
       // console.log('url data', data)
 
-      // empty data points
+      // not empty data points
       if (data['features'] && data['features'].length > 0) {
-        this.setState({dataJson: data['features']})
-        this._processData();
+        const {path, points} = this._processData(data['features']);
 
-        this.setState({
-          selectedTimeStamp, busRoute
-        })
+        const dataKey = this.getDataKey(selectedTimeStamp, busRoute);
+        this.setState((previousState) => {
+          return {
+            dataJsonCollection: {
+              ...previousState.dataJsonCollection,
+              [dataKey] : {
+                show: true,             // if show on the map
+                json: data['features'], // raw geojson
+                path: path,             // trip format data
+                points: points          // scatterplot/hexagons format data
+              }
+            }
+          }
+        },
+        () => this.setDataToShow()
+        );
       } else {
-        alert('data points for ' + new Date(selectedTimeStamp) + ' ' + busRoute + ' is empty. Please choose another timepoint or bus route.');
+        alert('Data points for ' + new Date(selectedTimeStamp) + ' ' + busRoute + ' is empty. Please choose another timepoint or bus route.');
       }
     }, err => {
       // Status Code: 500 Internal Server Error
       console.log(err); 
-      alert(err);
+      alert('Data points for ' + new Date(selectedTimeStamp) + ' ' + busRoute + ' is not available.', err);
       // this.getApiData(0, 0, readLocalFile = true)
     })
 
@@ -88,28 +98,106 @@ export default class App extends React.Component{
      */
   }
 
-  _processData = () => {
+  _processData = (rawData) => {
 
-    const data = getDataFromJson(this.state.dataJson)
-    const points = getPointsFromJson(this.state.dataJson)
+    const path = getDataFromJson(rawData)
+    const points = getPointsFromJson(rawData)
 
-    this.setState({ data, points })
+    return { path, points }
   };
+
+  setDataToShow() {
+    // recombine dataToShow
+    let jsonList = []
+    let pathList = []
+    let pointsList = []
+    let dataShowedLabel = []
+
+    const { dataJsonCollection} = this.state;
+
+    for (let key in dataJsonCollection) {
+      if (dataJsonCollection[key].show === true) {
+
+        jsonList.push(...dataJsonCollection[key].json);
+        pathList.push(...dataJsonCollection[key].path);
+        pointsList.push(...dataJsonCollection[key].points);
+
+        dataShowedLabel.push(key) 
+      }
+    }
+
+    this.setState({
+      // dataToShow: dataList
+      dataToShow: {
+        json: jsonList,
+        path: pathList,
+        points: pointsList
+      }
+    },
+    () => this.updateDataLabel(dataShowedLabel)
+    )
+  }
+
+  updateDataLabel(dataShowedLabel) {
+    let timestamp = START_TIME;
+    let buses = [];
+
+    if (dataShowedLabel.length > 0) {
+      // timestamp is always the same
+      timestamp = Number(dataShowedLabel[0].split('-')[1])
+      for (let index = 0; index < dataShowedLabel.length; index++) {
+        buses.push(dataShowedLabel[index].split('-')[0]);
+      }
+    }
+
+    this.setState({
+      selectedTimeStamp: timestamp,
+      busRoutes: buses
+    })
+  }
 
   onStyleChange = style => {
     this.setState({ style });
   };
 
-  getSelectedTime = (selectedTimeStamp) => {
-    if (selectedTimeStamp > START_TIME 
-      && selectedTimeStamp !== this.state.selectedTimeStamp) {
-      this.getApiData (selectedTimeStamp, this.state.busRoute)
-    }
+  getDataKey(timestamp, busRoute) {
+    return busRoute + '-' + timestamp;
   }
 
-  getSelectedRoute = (busRoute) => {
-    if (busRoute !== this.state.busRoute) {
-      this.getApiData (this.state.selectedTimeStamp, busRoute)
+  updateDataCollection(selectedTimeStamp, busRoutes) {
+    // get all the possible combination of timestamp and busroute
+    // then compare with the keys in data collection
+    const { dataJsonCollection} = this.state;
+    let hasUpdate = false;
+
+    // set all show status to false
+    for (let ele in dataJsonCollection) {
+      dataJsonCollection[ele].show = false;
+    }
+
+    for (let index = 0; index < busRoutes.length; index++) {
+      const element = busRoutes[index];
+      const currKey = this.getDataKey(selectedTimeStamp, element);
+
+      if (dataJsonCollection[currKey]) {
+        // set show to true
+        dataJsonCollection[currKey].show = true;
+      } else {
+        // request url
+        this.getApiData (selectedTimeStamp, element);
+        hasUpdate = true
+      }
+    }
+
+    return hasUpdate
+  }
+
+  setSelectedDataSource = (newChoice) => {
+
+    const {dataTime, busRoutes} = newChoice;
+    // console.log('app', dataTime, busRoutes)
+    if (this.updateDataCollection(dataTime, busRoutes) === false) {
+      this.setDataToShow()
     }
   }
 
@@ -118,24 +206,21 @@ export default class App extends React.Component{
 
     return (
       <div>
-        <MapStylePicker
+        <MapStylePicker 
           onStyleChange={this.onStyleChange}
           currentStyle={this.state.style}
         />
         <MapLayers 
-          trips={this.state.data}
-          points={this.state.points} 
-          geojson={this.state.dataJson} 
+          data={this.state.dataToShow}
           mapStyle={this.state.style}
-          getSelectedTime={this.getSelectedTime}
-          getSelectedRoute={this.getSelectedRoute}
+          setSelectedDataSource={this.setSelectedDataSource}
         />
         <span style={{...layerControl, top: '0px'}}>
           <b>Current Data Source:</b>
           <br/>
           {new Date(this.state.selectedTimeStamp).toString()}
           <br/>
-          {this.state.busRoute}
+          {this.state.busRoutes.join(', ')}
         </span>
       </div>
     )

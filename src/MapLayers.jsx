@@ -16,13 +16,14 @@ import {
   // MapStylePicker,
   LayerControls, // create settings for our scatterplot layer
   LAYER_CONTROLS,
-  DATA_CONTROLS
+  DATA_CONTROLS,
+  DataSourceControls
 } from './helper/controls';
 
 // Trips can only be called in a function, it uses hooks
 export function MapLayers (props) {
   // trips={this.state.data} points={this.state.points} mapStyle={this.state.style}
-  const {trips, points, geojson, mapStyle, getSelectedTime, getSelectedRoute} = props
+  const {data, mapStyle, setSelectedDataSource} = props
 
   // reading setting from LAYER_CONTROLS and DATA_CONTROLS
   const settings1 = Object.keys(LAYER_CONTROLS).reduce(
@@ -59,21 +60,15 @@ export function MapLayers (props) {
           `
           ${object.properties.vehicle_id} \n
           agency: ${object.properties.agency} \n
+          route_long: ${object.properties.route_long} \n
           bearing: ${object.properties.bearing} \n
           destination_name: ${object.properties.destination_name} \n
           direction: ${object.properties.direction} \n
-          gtfs_block_id: ${object.properties.gtfs_block_id} \n
-          gtfs_shape_id: ${object.properties.gtfs_shape_id} \n
-          next_stop_d: ${object.properties.next_stop_d} \n
-          next_stop_d_along_route: ${object.properties.next_stop_d_along_route} \n
-          next_stop_eta: ${object.properties.next_stop_eta} \n
-          next_stop_id: ${object.properties.next_stop_id} \n
-          origin_id: ${object.properties.origin_id} \n
-          route_long: ${object.properties.route_long} \n
           trip_id: ${object.properties.trip_id} \n
           ` 
           : `${object.vehicle_id} \n
-            bearing: ${object.bearing}
+            route_long: ${object.route_long} \n
+            bearing: ${object.bearing} \n
             speed: ${object.speedmph}` // scatterplot format
       )
     : null;
@@ -85,26 +80,29 @@ export function MapLayers (props) {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
 
   useEffect(() => {
-    if (geojson.length > 0 && geojson[0].geometry && geojson[0].geometry.coordinates) {
+    if (data.json && data.json.length > 0 && data.json[0].geometry && data.json[0].geometry.coordinates) {
       setViewState(
         {
-          ... INITIAL_VIEW_STATE,
-          longitude: geojson[0].geometry.coordinates[0], // bus trips' center geo: get the middle of max and min geo, or for simplicity, cencented on the first point
-          latitude: geojson[0].geometry.coordinates[1],
+          ...INITIAL_VIEW_STATE,
+          longitude: data.json[0].geometry.coordinates[0], // bus trips' center geo: get the middle of max and min geo, or for simplicity, cencented on the first point
+          latitude: data.json[0].geometry.coordinates[1],
         }
       )              
     }
     return () => {
       // cleanup
     }
-  }, [geojson])
+  }, [data.json])
 
   // time sync and control
   const [minTime, setMinTime] = useState(0);
-  const [maxTime, setMaxTime] = useState(1800);
+  const [maxTime, setMaxTime] = useState(4000);
   useEffect(
     () => {
-      const timestamps = points.reduce(
+      if (!data.points) {
+        return;
+      }
+      const timestamps = data.points.reduce(
         (ts, trip) => {
           ts.push(trip.timestamp);
           return ts; 
@@ -115,33 +113,33 @@ export function MapLayers (props) {
       setMinTime(Math.min(...timestamps));
       setMaxTime(Math.max(...timestamps));
     },
-    [points]
+    [data.points]
   )
 
   const currentTimeObj = WithTime(maxTime)
 
   // get layers
   let layers = Trips({
-    tripPath: trips,
+    tripPath: data.path,
     currentTime: currentTimeObj.getCurrentTime(),
     settings: settings,
     onHover: hover => _onHover(hover)
   }).concat(
     ScatterPlots({
-      data: points, 
+      data: data.points, 
       currentTime: currentTimeObj.getCurrentTime(),
       settings: settings,
       onHover: hover => _onHover(hover)
     })
   ).concat(
     Hexagons({
-      data: points,
+      data: data.points,
       settings: settings,
       onHover: hover => _onHover(hover)
     })
   ).concat(  
     GeoJson({
-      data: geojson,
+      data: data.json,
       settings: settings,
       onHover: hover => _onHover(hover)
     })
@@ -159,21 +157,30 @@ export function MapLayers (props) {
           <div>{hover.label}</div>
         </div>
       )}
-      <LayerControls
-        settings={settings}
-        propTypes={{...LAYER_CONTROLS, ...DATA_CONTROLS}}
-        onChange={(settingName, newValue) => {
-          setSettings({
-            ...settings,
-            [settingName]: newValue
-          });
-          if (settingName === 'dataTime') {
-            getSelectedTime(newValue);
-          } else if (settingName === 'busRoute') {
-            getSelectedRoute(newValue);
-          }
-        }}
-      />
+      <div className="layer-controls" style ={layerControl}>
+        <DataSourceControls
+          settings={settings}
+          propTypes={DATA_CONTROLS}
+          onChange={(newSetting) => {
+            setSettings({
+              ...settings,
+              ...newSetting
+            });
+            setSelectedDataSource(newSetting)
+          }}
+          />
+        <LayerControls
+          settings={settings}
+          propTypes={LAYER_CONTROLS}
+          onChange={(settingName, newValue) => {
+            setSettings({
+              ...settings,
+              [settingName]: newValue
+            });
+          }}
+        />
+      </div>
+
       <DeckGL
         layers={layers}
         // getTooltip={({object}) => object && object.vehicle_id}

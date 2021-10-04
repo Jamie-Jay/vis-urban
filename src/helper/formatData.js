@@ -29,8 +29,10 @@
       console.log('Max:', Math.max(...timestamps));
 */
 export function getDataFromJson (rawData) {
+
   return rawData.reduce(
     (accu, curr) => {
+
       // process timestamp
       let currTimestamp = new Date(
         curr.properties.timestamp.substring(0, 19) // '2021-09-20 12:51:46-04:00'
@@ -45,6 +47,7 @@ export function getDataFromJson (rawData) {
         // didn't find the vehicle, create new
         accu.push({
           vehicle_id: curr.properties.vehicle_id,
+          route_long: curr.properties.route_long,
           path: [curr.geometry.coordinates],
           timestamps: [currTimestamp],
           speedmph: [speed],
@@ -86,6 +89,7 @@ export function getDataFromJson (rawData) {
 // speedmph: 5.096842057404869
 // vehicle_id: "MTA NYCT_5343"
 export function getPointsFromJson (rawData) {
+
   return rawData.reduce(
     (accu, curr) => {
 
@@ -101,6 +105,7 @@ export function getPointsFromJson (rawData) {
       accu.push({
         position: curr.geometry.coordinates,
         vehicle_id: curr.properties.vehicle_id,
+        route_long: curr.properties.route_long,
         timestamp: currTimestamp,
         bearing: curr.properties.bearing,
         speedmph: speed
