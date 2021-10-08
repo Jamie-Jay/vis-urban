@@ -5,7 +5,7 @@ import { getDataFromJson, getPointsFromJson } from './helper/formatData'
 import { layerControl } from './helper/style';
 
 const BASE_URL_CAMPUS = 'http://10.92.214.223/';
-const BASE_URL = 'http://api.buswatcher.org/';
+const BASE_URL = 'https://api.buswatcher.org/';
 
 function getUrl(selectedTimeStamp, busRoute) {
     // combine url
