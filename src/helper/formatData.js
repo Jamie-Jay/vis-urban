@@ -67,10 +67,15 @@ export function getPathFromJson (rawData) {
         })
         
       } else {
-        // add to the path and timestamps
-        accu[index].path.push(curr.geometry.coordinates)
-        accu[index].timestamps.push(currTimestamp)
-        accu[index].bearings.push(curr.properties.bearing)
+        // if time diff with the previous record is 0, deem replicate records, skip the current record
+        if (currTimestamp != accu[index].timestamps.slice(-1)) { 
+          // add to the path and timestamps
+          accu[index].path.push(curr.geometry.coordinates)
+          accu[index].timestamps.push(currTimestamp)
+          accu[index].bearings.push(curr.properties.bearing)
+        } else {
+          // console.log(curr.properties.vehicle_id, currTimestamp, ' replica - deleted')
+        }
       }
 
       return accu;
@@ -122,6 +127,9 @@ function calcSpeed (rawData) {
       // time diff
       let timeDiff = pathByVehicleId[index].timestamps[pos] - pathByVehicleId[index].timestamps[pos - 1]
       // speed
+      if (timeDiff === 0) {
+        console.log(pathByVehicleId[index].vehicle_id, pathByVehicleId[index].timestamps[pos], ' replica - should have been deleted')
+      }
       let speedmph = timeDiff === 0 ? 0 : distance / timeDiff * 1000 * 60 * 60
       pathByVehicleId[index].speedmphs.push(speedmph)
     }
