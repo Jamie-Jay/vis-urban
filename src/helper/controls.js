@@ -65,7 +65,7 @@ export const LAYER_CONTROLS = {
   IconSizeScale: {
     displayName: 'Icon/Arrow size Scale',
     type: 'range',
-    value: 1,
+    value: 5,
     min: 1,
     max: 20
   },

@@ -36,7 +36,7 @@ export const ScatterPlots = (props) => {
       new CustomScatterplotLayer({
         id: 'scatterplot',
         ...layerProps,
-        getRadius: d => Math.max(d.speedmph, 50.0) // speed no faster than 50
+        getRadius: d => Math.min(d.speedmph, 50.0) // speed no faster than 50
       })
     )
   ];
