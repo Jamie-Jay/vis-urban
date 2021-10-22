@@ -14,41 +14,27 @@ export const Icons = (props) => {
 
   const { data, settings, onHover } = props;
 
-  const layerProps = {
-    data,
-    pickable: true,
-    getPosition: d => d.position,
-    iconAtlas,
-    iconMapping,
-    sizeUnits: 'meters',
-    sizeScale: settings.IconSizeScale,
-    sizeMinPixels: 6,
-    getColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24], //[255 / d.speedmph, 140, 0],
-    getAngle: d => d.bearing + 90,
-    getIcon: d => {
-      if (d.speedmph <= 2) {
-        return 'markerSlow';
-      }
-    
-      return 'marker';
-    },
-    onHover
-  };
-
   return [
-    settings.showIcons && (
-      settings.IconSizeInverseSpeed ? 
-        new IconLayer({
-          id: 'icon-inverse',
-          ...layerProps,
-          getSize: d => inverseSpeed(d.speedmph) // do not inverse when speed = 0
-        })
-        :
-        new IconLayer({
-          id: 'icon',
-          ...layerProps,
-          getSize: d => Math.min(d.speedmph, 50.0) // speed no faster than 50
-        })
-    )
+      new IconLayer({
+        id: 'icon',
+        data,
+        visible: settings.showIcons,
+        pickable: true,
+        onHover,
+    
+        getPosition: d => d.position,
+        iconAtlas,
+        iconMapping,
+        sizeUnits: 'meters',
+        sizeScale: settings.IconSizeScale,
+        sizeMinPixels: 6,
+        getColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24], //[255 / d.speedmph, 140, 0],
+        getAngle: d => d.bearing + 90,
+        getIcon: d => (d.speedmph <= 2) ? 'markerSlow' : 'marker',
+        getSize: d => settings.IconSizeInverseSpeed ? inverseSpeed(d.speedmph) : Math.min(d.speedmph, 50.0), // do not inverse when speed = 0
+        updateTriggers: {
+          getSize: [settings.IconSizeInverseSpeed]
+        }
+      })
   ]
 }

@@ -60,22 +60,32 @@ export function MapLayers (props) {
   function _onHover({ x, y, object }) {
     const label = object ? 
     object.points ? // hexgon points format
-      `${object.points.length} points here` :
+      [`${object.points.length} points here`] :
       (
-        object.properties ? // geojson format
-          `
-          ${object.properties.vehicle_id} \n
-          agency: ${object.properties.agency} \n
-          route_long: ${object.properties.route_long} \n
-          bearing: ${object.properties.bearing} \n
-          destination_name: ${object.properties.destination_name} \n
-          direction: ${object.properties.direction} \n
-          trip_id: ${object.properties.trip_id} \n
-          ` 
-          : `${object.vehicle_id} \n
-            route_long: ${object.route_long} \n
-            bearing: ${object.bearing} \n
-            speed: ${object.speedmph} mph` // scatterplot format
+        object.properties ? 
+          [
+            `${object.properties.vehicle_id}`,
+          `agency: ${object.properties.agency}`,
+          `route: ${object.properties.route_long}`,
+          `bearing: ${object.properties.bearing.toFixed(2)}`,
+          `destination: ${object.properties.destination_name}`,
+          `direction: ${object.properties.direction}`,
+          `trip id: ${object.properties.trip_id}`
+          ] // geojson format
+          : 
+          object.path ? 
+            [
+              `${object.vehicle_id}`,
+              `route: ${object.route_long}`,
+              `average speed: ${object.speedmph_avg.toFixed(2)} mph`
+            ] // trip layer format
+            : 
+            [
+              `${object.vehicle_id}`,
+              `route: ${object.route_long}`,
+              `bearing: ${object.bearing.toFixed(2)}`,
+              `speed: ${object.speedmph.toFixed(2)} mph`
+            ] // scatterplot format
       )
     : null;
 
@@ -152,7 +162,7 @@ export function MapLayers (props) {
             transform: `translate(${hover.x}px, ${hover.y}px)`
           }}
         >
-          <div>{hover.label}</div>
+        {hover.label.map(content => (<div key={content}>{content}</div>))}
         </div>
       )}
       <div className="layer-controls" style ={layerControl}>

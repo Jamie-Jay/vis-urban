@@ -26,28 +26,25 @@ export const Hexagons = (props) => {
   const { data, onHover, settings } = props;
 
   return [
-    settings.showHexagon &&
-      new HexagonLayer({
-        id: 'heatmap',
-        data,
-        colorRange: HEATMAP_COLORS,
-        elevationRange,
-        elevationScale: 5,
-        extruded: true, // Whether to enable hexagon elevation
-        getPosition: d => d.position, // Function that gets called on each data point, should return an array of [longitude, latitude].
-        lightSettings: LIGHT_SETTINGS,
-        opacity: 0.8,
-        pickable: true, // Indicates whether this layer should be interactive.
-        onHover,
-        // ...settings
-        radius: 100,
-        // radius {Number}
-        // Hexagon layer cell radius in meters
-        coverage: 0.5,
+    new HexagonLayer({
+      id: 'heatmap',
+      data,
+      visible: settings.showHexagon,
+      opacity: 0.8,
+      pickable: true,
+      onHover,
 
-        upperPercentile: 100
-        // upperPercentile {Number} (Default: 100)
-        // Hexagon cells with value larger than upperPercentile will be hidden
-      })
+      colorRange: HEATMAP_COLORS,
+      elevationRange,
+      elevationScale: 5,
+      extruded: true, // Whether to enable hexagon elevation
+      getPosition: d => d.position, // Function that gets called on each data point, should return an array of [longitude, latitude].
+      lightSettings: LIGHT_SETTINGS,
+
+      // fix settings
+      radius: 100, // radius {Number}, Hexagon layer cell radius in meters
+      coverage: 0.5,
+      upperPercentile: 100 // upperPercentile {Number} (Default: 100), Hexagon cells with value larger than upperPercentile will be hidden
+    })
   ];
 }

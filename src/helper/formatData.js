@@ -3,7 +3,8 @@ import * as turf from '@turf/turf'
 /** turn to 
  * [
       {
-        "vehicle_id": , 
+        "vehicle_id": ,
+        speedmph_avg: ,
         path:[
           [,],
           [,],
@@ -68,7 +69,7 @@ export function getPathFromJson (rawData) {
         
       } else {
         // if time diff with the previous record is 0, deem replicate records, skip the current record
-        if (currTimestamp != accu[index].timestamps.slice(-1)) { 
+        if (currTimestamp !== accu[index].timestamps.slice(-1)[0]) { 
           // add to the path and timestamps
           accu[index].path.push(curr.geometry.coordinates)
           accu[index].timestamps.push(currTimestamp)
@@ -135,6 +136,13 @@ function calcSpeed (rawData) {
     }
     // assume the first position speed = the second speed
     pathByVehicleId[index].speedmphs[0] = pathByVehicleId[index].speedmphs[1]
+
+    // calc average speed
+    linestring.geometry.coordinates[0] = positions[0]
+    linestring.geometry.coordinates[1] = positions.slice(-1)[0]
+    pathByVehicleId[index].speedmph_avg = 
+      turf.length(linestring, {units: 'miles'}) / 
+      (pathByVehicleId[index].timestamps.slice(-1) - pathByVehicleId[index].timestamps[0]) * 1000 * 60 * 60
   }
 }
 

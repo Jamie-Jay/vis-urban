@@ -5,7 +5,7 @@ import { convertTimeToTimer } from '../helper/controls'
 
 export const Trips = (props) => {
 
-  const { data, settings, currentTime } = props;
+  const { data, settings, onHover, currentTime } = props;
   const trailLength = 180;
 
   const layers = [
@@ -17,10 +17,13 @@ export const Trips = (props) => {
     //   stroked: false,
     //   getFillColor: [0, 0, 0, 0]
     // }),
-    settings.showTripTrace &&
     new TripsLayer({
       id: 'trips',
       data,
+      visible: settings.showTripTrace,
+      pickable: true,
+      onHover,
+
       getPath: d => d.path,
       getTimestamps: d => d.timestamps.map((timestamp) => convertTimeToTimer(timestamp)),
       getColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24],
@@ -32,10 +35,7 @@ export const Trips = (props) => {
       rounded: true,
       trailLength,
       currentTime: currentTime,
-
-      shadowEnabled: false,
-      // onHover,
-      // ...settings
+      shadowEnabled: false
     })
   ];
 

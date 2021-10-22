@@ -6,38 +6,30 @@ export const ScatterPlots = (props) => {
 
   const { data, onHover, settings, currentTime } = props;
 
-  const layerProps = {
-    data,
-    pickable: true,
-    getPosition: d => d.position,
-    getFillColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24],
-    getLineColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24],
-    radiusScale: settings.IconSizeScale,
-    // accessor for custom layer
-    getAngle: d => d.bearing / 180 * Math.PI,
-    getTime: d => convertTimeToTimer(d.timestamp),
-    currentTime: currentTime,
-    opacity: 0.5,
-    radiusMinPixels: 2,
-    // radiusMaxPixels: 30,
-    onHover
-  };
-
-
   return [
-    settings.showScatterplot && (
-      settings.IconSizeInverseSpeed ? 
-      new CustomScatterplotLayer({
-        id: 'scatterplot-inverse',
-        ...layerProps,
-        getRadius: d => inverseSpeed(d.speedmph)
-      })
-      :
-      new CustomScatterplotLayer({
-        id: 'scatterplot',
-        ...layerProps,
-        getRadius: d => Math.min(d.speedmph, 50.0) // speed no faster than 50
-      })
-    )
+    new CustomScatterplotLayer({
+      id: 'scatterplot',
+      data,
+      visible: settings.showScatterplot,
+      opacity: 0.5,
+      pickable: true,
+      onHover,
+  
+      getPosition: d => d.position,
+      getFillColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24],
+      getLineColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24],
+      radiusScale: settings.IconSizeScale,
+      radiusMinPixels: 2,
+      // radiusMaxPixels: 30,
+      getRadius: d => settings.IconSizeInverseSpeed ? inverseSpeed(d.speedmph) : Math.min(d.speedmph, 50.0),
+      updateTriggers: {
+        getRadius: [settings.IconSizeInverseSpeed]
+      },
+
+      // accessor for custom layer
+      getAngle: d => d.bearing / 180 * Math.PI,
+      getTime: d => convertTimeToTimer(d.timestamp),
+      currentTime: currentTime
+    })
   ];
 }
