@@ -1,10 +1,11 @@
 import {TripsLayer} from '@deck.gl/geo-layers';
 // import {PolygonLayer} from '@deck.gl/layers';
 import { COLOR_PALETTE } from '../helper/constants'
+import { convertTimeToTimer } from '../helper/controls'
 
 export const Trips = (props) => {
 
-  const { tripPath, settings, currentTime } = props;
+  const { data, settings, currentTime } = props;
   const trailLength = 180;
 
   const layers = [
@@ -19,14 +20,15 @@ export const Trips = (props) => {
     settings.showTripTrace &&
     new TripsLayer({
       id: 'trips',
-      data: tripPath,
+      data,
       getPath: d => d.path,
-      getTimestamps: d => d.timestamps,
+      getTimestamps: d => d.timestamps.map((timestamp) => convertTimeToTimer(timestamp)),
       getColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24],
       opacity: 0.3,
       widthMinPixels: 2,
-      widthMaxPixels: 10,
+      // widthMaxPixels: 10,
       // widthScale: d => 10,//d.speedmph,
+      getWidth: settings.TripTraceWidth, //d => d.speedmphs * 300,
       rounded: true,
       trailLength,
       currentTime: currentTime,

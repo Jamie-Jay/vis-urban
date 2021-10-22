@@ -29,6 +29,7 @@ export const Hexagons = (props) => {
     settings.showHexagon &&
       new HexagonLayer({
         id: 'heatmap',
+        data,
         colorRange: HEATMAP_COLORS,
         elevationRange,
         elevationScale: 5,
@@ -37,12 +38,14 @@ export const Hexagons = (props) => {
         lightSettings: LIGHT_SETTINGS,
         opacity: 0.8,
         pickable: true, // Indicates whether this layer should be interactive.
-        data,
         onHover,
-        ...settings
+        // ...settings
+        radius: 100,
         // radius {Number}
         // Hexagon layer cell radius in meters
+        coverage: 0.5,
 
+        upperPercentile: 100
         // upperPercentile {Number} (Default: 100)
         // Hexagon cells with value larger than upperPercentile will be hidden
       })

@@ -10,6 +10,14 @@ import { NYC_BUS_ROUTES_BY_COLOR } from './BusRoutes'
 export const START_TIME = 1630468800000;
 export const BUS_ROUTES = ['M15', 'Bx4', 'Bx17', 'Bx19'];
 
+export const convertTimeToTimer = (timestamp) => {
+  return (timestamp - START_TIME) / 1000
+}
+
+export const inverseSpeed = (speedmph) => {
+  return speedmph === 0 ? 0 : (100 / speedmph > 50 ? 50 : 100 / speedmph) // do not inverse when speed = 0 and speed no faster than 50
+}
+
 export const DATA_CONTROLS = {
   dataTime: {
     displayName: 'Date-Time',
@@ -29,19 +37,38 @@ export const LAYER_CONTROLS = {
     type: 'boolean',
     value: true
   },
+  TripTraceWidth: {
+    displayName: 'Trip Trace Width',
+    type: 'range',
+    value: 50
+  },
   showScatterplot: {
-    displayName: 'Show Scatterplot',
+    displayName: 'Show Arrow Animation',
     type: 'boolean',
     value: true
   },
-  // radiusAmplifier: {
-  //   displayName: 'Scatterplot Radius Amplifier',
-  //   type: 'range',
-  //   value: 5,
-  //   step: 5,
-  //   min: 1,
-  //   max: 20
+  // showHeatmap: {
+  //   displayName: 'Show Heatmap',
+  //   type: 'boolean',
+  //   value: true
   // },
+  showIcons: {
+    displayName: 'Show Icons(red: speed<=2mph)',
+    type: 'boolean',
+    value: true
+  },
+  IconSizeInverseSpeed: {
+    displayName: 'Icon/Arrow size inverse of Speed(mph)',
+    type: 'boolean',
+    value: true
+  },
+  IconSizeScale: {
+    displayName: 'Icon/Arrow size Scale',
+    type: 'range',
+    value: 1,
+    min: 1,
+    max: 20
+  },
   showGeoJson: {
     displayName: 'Show GeoJson',
     type: 'boolean',
@@ -52,45 +79,29 @@ export const LAYER_CONTROLS = {
     type: 'boolean',
     value: false
   },
-  radius: {
-    displayName: 'Hexagon Radius',
-    type: 'range',
-    value: 100,
-    step: 50,
-    min: 50,
-    max: 1000
-  },
-  coverage: {
-    displayName: 'Hexagon Coverage',
-    type: 'range',
-    value: 0.5,
-    step: 0.1,
-    min: 0,
-    max: 1
-  },
-  upperPercentile: {
-    displayName: 'Hexagon Upper Percentile',
-    type: 'range',
-    value: 100,
-    step: 0.1,
-    min: 80,
-    max: 100
-  }
-};
-
-export const SCATTERPLOT_CONTROLS = {
-  showScatterplot: {
-    displayName: 'Show Scatterplot',
-    type: 'boolean',
-    value: true
-  },
-  // radiusScale: {
-  //   displayName: 'Scatterplot Radius',
+  // radius: {
+  //   displayName: 'Hexagon Radius',
   //   type: 'range',
-  //   // value: 30,
-  //   // step: 10,
-  //   min: 10,
-  //   max: 200
+  //   value: 100,
+  //   step: 50,
+  //   min: 50,
+  //   max: 1000
+  // },
+  // coverage: {
+  //   displayName: 'Hexagon Coverage',
+  //   type: 'range',
+  //   value: 0.5,
+  //   step: 0.1,
+  //   min: 0,
+  //   max: 1
+  // },
+  // upperPercentile: {
+  //   displayName: 'Hexagon Upper Percentile',
+  //   type: 'range',
+  //   value: 100,
+  //   step: 0.1,
+  //   min: 80,
+  //   max: 100
   // }
 };
 

@@ -4,8 +4,10 @@ import DeckGL from '@deck.gl/react';
 
 import { Trips } from './layers/Trips'
 import { ScatterPlots } from './layers/ScatterPlots'
+// import { Heatmaps } from './layers/Heatmaps'
 import { Hexagons } from './layers/Hexagons'
 import { GeoJson } from './layers/Geojson'
+import { Icons } from './layers/Icons'
 import { tooltipStyle, layerControl } from './helper/style'; // Mouseover interaction
 
 import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, DEFAULT_THEME } from './helper/constants'
@@ -23,24 +25,28 @@ import {
 // Trips can only be called in a function, it uses hooks
 export function MapLayers (props) {
   // trips={this.state.data} points={this.state.points} mapStyle={this.state.style}
-  const {data, mapStyle, setSelectedDataSource} = props
+  const {data, mapStyle, 
+    setSelectedDataSource,
+    currMinTime,
+    currMaxTime,
+  } = props
 
   // reading setting from LAYER_CONTROLS and DATA_CONTROLS
-  const settings1 = Object.keys(LAYER_CONTROLS).reduce(
-    (accu, key) => ({
-      ...accu,
-      [key]: LAYER_CONTROLS[key].value
-    }),
-    Object.keys(DATA_CONTROLS).reduce(
+  const [settings, setSettings] = useState(
+    Object.keys(LAYER_CONTROLS).reduce(
       (accu, key) => ({
         ...accu,
-        [key]: DATA_CONTROLS[key].value
+        [key]: LAYER_CONTROLS[key].value
       }),
-      {}
+      Object.keys(DATA_CONTROLS).reduce(
+        (accu, key) => ({
+          ...accu,
+          [key]: DATA_CONTROLS[key].value
+        }),
+        {}
+      )
     )
   );
-
-  const [settings, setSettings] = useState(settings1);
 
   // hover content
   const [hover, setHover] = useState(
@@ -69,7 +75,7 @@ export function MapLayers (props) {
           : `${object.vehicle_id} \n
             route_long: ${object.route_long} \n
             bearing: ${object.bearing} \n
-            speed: ${object.speedmph}` // scatterplot format
+            speed: ${object.speedmph} mph` // scatterplot format
       )
     : null;
 
@@ -95,32 +101,11 @@ export function MapLayers (props) {
   }, [data.json])
 
   // time sync and control
-  const [minTime, setMinTime] = useState(0);
-  const [maxTime, setMaxTime] = useState(4000);
-  useEffect(
-    () => {
-      if (!data.points) {
-        return;
-      }
-      const timestamps = data.points.reduce(
-        (ts, trip) => {
-          ts.push(trip.timestamp);
-          return ts; 
-        },
-        []
-      );
-    
-      setMinTime(Math.min(...timestamps));
-      setMaxTime(Math.max(...timestamps));
-    },
-    [data.points]
-  )
-
-  const currentTimeObj = WithTime(maxTime)
+  const currentTimeObj = WithTime(currMaxTime)
 
   // get layers
   let layers = Trips({
-    tripPath: data.path,
+    data: data.path,
     currentTime: currentTimeObj.getCurrentTime(),
     settings: settings,
     onHover: hover => _onHover(hover)
@@ -131,15 +116,28 @@ export function MapLayers (props) {
       settings: settings,
       onHover: hover => _onHover(hover)
     })
+  // ).concat(
+  //   Heatmaps({
+  //     data: data.points, 
+  //     currentTime: currentTimeObj.getCurrentTime(),
+  //     settings: settings,
+  //     onHover: hover => _onHover(hover)
+  //   })
   ).concat(
     Hexagons({
       data: data.points,
       settings: settings,
       onHover: hover => _onHover(hover)
     })
-  ).concat(  
+  ).concat(
     GeoJson({
       data: data.json,
+      settings: settings,
+      onHover: hover => _onHover(hover)
+    })
+  ).concat(  
+    Icons({
+      data: data.points,
       settings: settings,
       onHover: hover => _onHover(hover)
     })
@@ -202,19 +200,19 @@ export function MapLayers (props) {
       {
         (settings.showScatterplot || settings.showTripTrace) ?
           <span style={{...layerControl, top: '0px', right: '300px'}}>
-          <div style={{ width: '100%', marginTop: "1.5rem" }}>
+          <div style={{ width: '100%', marginTop: "1rem" }}>
             <b>Trace & Scatterplot Controller</b>
             <input
               style={{ width: '100%' }}
               type="range"
-              min={minTime}
-              max={maxTime}
+              min={currMinTime}
+              max={currMaxTime}
               step="0.1"
               value={currentTimeObj.getCurrentTime()}
               readOnly
               onChange={ e => { currentTimeObj.setCurrentTime(Number(e.target.value)); }}
             />
-            Time: {currentTimeObj.getCurrentTime()}
+            {/* Time: {currentTimeObj.getCurrentTime()} */}
           </div>
         </span>
         : null

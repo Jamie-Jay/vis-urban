@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapLayers } from './MapLayers'
-import { MapStylePicker, START_TIME, BUS_ROUTES } from './helper/controls';
-import { getDataFromJson, getPointsFromJson } from './helper/formatData'
+import { MapStylePicker, START_TIME, BUS_ROUTES, convertTimeToTimer } from './helper/controls';
+import { getPathFromJson, getPointsFromPath } from './helper/formatData'
 import { layerControl } from './helper/style';
 
 const BASE_URL_CAMPUS = 'http://10.92.214.223/';
@@ -28,7 +28,9 @@ export default class App extends React.Component{
     dataToShow: [],
     style: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
     selectedTimeStamp: START_TIME,
-    busRoutes: BUS_ROUTES
+    busRoutes: BUS_ROUTES,
+    currMaxTime: 4000,
+    currMinTime: 0,
   }
 
   componentDidMount(){
@@ -100,8 +102,8 @@ export default class App extends React.Component{
 
   _processData = (rawData) => {
 
-    const path = getDataFromJson(rawData)
-    const points = getPointsFromJson(rawData)
+    const path = getPathFromJson(rawData)
+    const points = getPointsFromPath(rawData)
 
     return { path, points }
   };
@@ -113,7 +115,7 @@ export default class App extends React.Component{
     let pointsList = []
     let dataShowedLabel = []
 
-    const { dataJsonCollection} = this.state;
+    const { dataJsonCollection } = this.state;
 
     for (let key in dataJsonCollection) {
       if (dataJsonCollection[key].show === true) {
@@ -126,13 +128,31 @@ export default class App extends React.Component{
       }
     }
 
+    let maxTime = 0;
+    let minTime = 0;
+    // update max and min time transformed stamps (not real timestamp)
+    if (pointsList) {
+      const timestamps = pointsList.reduce(
+        (ts, trip) => {
+          ts.push(trip.timestamp);
+          return ts; 
+        },
+        []
+      );
+    
+      minTime = Math.min(...timestamps);
+      maxTime = Math.max(...timestamps);
+    }
+
     this.setState({
       // dataToShow: dataList
       dataToShow: {
         json: jsonList,
         path: pathList,
         points: pointsList
-      }
+      },
+      currMinTime: convertTimeToTimer(minTime),
+      currMaxTime: convertTimeToTimer(maxTime),
     },
     () => this.updateDataLabel(dataShowedLabel)
     )
@@ -212,6 +232,8 @@ export default class App extends React.Component{
         />
         <MapLayers 
           data={this.state.dataToShow}
+          currMinTime={this.state.currMinTime}
+          currMaxTime={this.state.currMaxTime}
           mapStyle={this.state.style}
           setSelectedDataSource={this.setSelectedDataSource}
         />
