@@ -3,7 +3,7 @@ import { StaticMap } from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 
 import { Trips } from './layers/Trips'
-import { ScatterPlots } from './layers/ScatterPlots'
+// import { ScatterPlots } from './layers/ScatterPlots'
 // import { Heatmaps } from './layers/Heatmaps'
 import { Hexagons } from './layers/Hexagons'
 import { GeoJson } from './layers/Geojson'
@@ -57,7 +57,7 @@ export function MapLayers (props) {
     }
   )
 
-  function _onHover({ x, y, object }) {
+  function _onHover({ x, y, object, index }) {
     const label = object ? 
     object.points ? // hexgon points format
       [`${object.points.length} points here`] :
@@ -65,26 +65,31 @@ export function MapLayers (props) {
         object.properties ? 
           [
             `${object.properties.vehicle_id}`,
-          `agency: ${object.properties.agency}`,
-          `route: ${object.properties.route_long}`,
-          `bearing: ${object.properties.bearing.toFixed(2)}`,
-          `destination: ${object.properties.destination_name}`,
-          `direction: ${object.properties.direction}`,
-          `trip id: ${object.properties.trip_id}`
+            `index: ${index + 1}`,
+            // `agency: ${object.properties.agency}`,
+            `route: ${object.properties.route_long}`,
+            `bearing: ${object.properties.bearing.toFixed(2)}`,
+            `destination: ${object.properties.destination_name}`,
+            // `direction: ${object.properties.direction}`,
+            `trip id: ${object.properties.trip_id}`,
+            `time: ${object.properties.timestamp}`
           ] // geojson format
           : 
           object.path ? 
             [
               `${object.vehicle_id}`,
+              `index: ${index + 1}`,
               `route: ${object.route_long}`,
               `average speed: ${object.speedmph_avg.toFixed(2)} mph`
             ] // trip layer format
             : 
             [
               `${object.vehicle_id}`,
+              `index: ${index + 1}`,
               `route: ${object.route_long}`,
               `bearing: ${object.bearing.toFixed(2)}`,
-              `speed: ${object.speedmph.toFixed(2)} mph`
+              `speed: ${object.speedmph.toFixed(2)} mph`,
+              `time: ${new Date(object.timestamp).toString()}`
             ] // scatterplot format
       )
     : null;
@@ -118,14 +123,15 @@ export function MapLayers (props) {
     data: data.path,
     currentTime: currentTimeObj.getCurrentTime(),
     settings: settings,
-    onHover: hover => _onHover(hover)
-  }).concat(
-    ScatterPlots({
-      data: data.points, 
-      currentTime: currentTimeObj.getCurrentTime(),
-      settings: settings,
-      onHover: hover => _onHover(hover)
-    })
+    onHover: hover => _onHover(hover) // 'hover' corresponds to one of the data entries that is passed in via prop.data
+  }
+  // ).concat(
+  //   ScatterPlots({
+  //     data: data.points, 
+  //     currentTime: currentTimeObj.getCurrentTime(),
+  //     settings: settings,
+  //     onHover: hover => _onHover(hover)
+  //   })
   // ).concat(
   //   Heatmaps({
   //     data: data.points, 
@@ -191,7 +197,7 @@ export function MapLayers (props) {
 
       <DeckGL
         layers={layers}
-        // getTooltip={({object}) => object && object.vehicle_id}
+        // getTooltip={({object}) => object && object.vehicle_id} // Deck automatically renders a tooltip if the getTooltip callback is supplied
         effects={DEFAULT_THEME.effects}
         initialViewState={viewState}
         controller={true} // for a map to be interactive, using the default MapController https://deck.gl/#/documentation/deckgl-api-reference/controllers/controller?section=event-handling

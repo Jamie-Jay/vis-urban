@@ -1,6 +1,5 @@
 import CustomScatterplotLayer from './ScatterArrowPlotAnimate';
-import { COLOR_PALETTE } from '../helper/constants'
-import { convertTimeToTimer, inverseSpeed } from '../helper/controls'
+import { convertTimeToTimer, inverseSpeed, colorSchema } from '../helper/controls'
 
 export const ScatterPlots = (props) => {
 
@@ -14,10 +13,12 @@ export const ScatterPlots = (props) => {
       opacity: 0.5,
       pickable: true,
       onHover,
+      autoHighlight: true,
+      highlightColor: [255, 255, 255],
   
       getPosition: d => d.position,
-      getFillColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24],
-      getLineColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24],
+      getFillColor: d => colorSchema(d.vehicle_id),
+      getLineColor: d => colorSchema(d.vehicle_id),
       radiusScale: settings.IconSizeScale,
       radiusMinPixels: 2,
       // radiusMaxPixels: 30,

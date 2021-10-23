@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { mapStylePicker, layerControl } from './style';
+import { COLOR_PALETTE } from '../helper/constants'
 
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -16,6 +17,10 @@ export const convertTimeToTimer = (timestamp) => {
 
 export const inverseSpeed = (speedmph) => {
   return speedmph === 0 ? 0 : (100 / speedmph > 50 ? 50 : 100 / speedmph) // do not inverse when speed = 0 and speed no faster than 50
+}
+
+export const colorSchema = (vehicle_id) => {
+  return COLOR_PALETTE[parseInt(vehicle_id.substr(vehicle_id.length - 4)) % COLOR_PALETTE.length]
 }
 
 export const DATA_CONTROLS = {
@@ -38,35 +43,46 @@ export const LAYER_CONTROLS = {
     value: true
   },
   TripTraceWidth: {
-    displayName: 'Trip Trace Width',
+    displayName: 'Trip Trace Width = avarage speed * ',
     type: 'range',
-    value: 50
+    value: 50,
+    min: 0,
+    max: 100
   },
-  showScatterplot: {
-    displayName: 'Show Arrow Animation',
-    type: 'boolean',
-    value: true
-  },
+  // showScatterplot: {
+  //   displayName: 'Show Arrow Animation',
+  //   type: 'boolean',
+  //   value: false
+  // },
   // showHeatmap: {
   //   displayName: 'Show Heatmap',
   //   type: 'boolean',
   //   value: true
   // },
   showIcons: {
-    displayName: 'Show Icons(red: speed<=2mph)',
+    displayName: 'Show Bus Positions',
     type: 'boolean',
     value: true
   },
+  IconsSpeedThreshold: {
+    displayName: 'Warning Icon for Speed <= mph',
+    type: 'range',
+    value: 2,
+    min: 0,
+    max: 10
+  },
   IconSizeInverseSpeed: {
-    displayName: 'Icon/Arrow size inverse of Speed(mph)',
+    // displayName: 'Icon/Arrow Size Inverse of Speed(mph)',
+    displayName: 'Icon Size Inverse of Speed(mph)',
     type: 'boolean',
     value: true
   },
   IconSizeScale: {
-    displayName: 'Icon/Arrow size Scale',
+    // displayName: 'Icon/Arrow Size Scale',
+    displayName: 'Icon Size Scale',
     type: 'range',
     value: 5,
-    min: 1,
+    min: 0,
     max: 20
   },
   showGeoJson: {

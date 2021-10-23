@@ -1,7 +1,6 @@
-import {TripsLayer} from '@deck.gl/geo-layers';
+import { TripsLayer } from '@deck.gl/geo-layers';
 // import {PolygonLayer} from '@deck.gl/layers';
-import { COLOR_PALETTE } from '../helper/constants'
-import { convertTimeToTimer } from '../helper/controls'
+import { convertTimeToTimer, colorSchema } from '../helper/controls'
 
 export const Trips = (props) => {
 
@@ -21,21 +20,32 @@ export const Trips = (props) => {
       id: 'trips',
       data,
       visible: settings.showTripTrace,
+      opacity: 0.3,
       pickable: true,
       onHover,
+      autoHighlight: true,
+      highlightColor: [255, 255, 255],
 
       getPath: d => d.path,
       getTimestamps: d => d.timestamps.map((timestamp) => convertTimeToTimer(timestamp)),
-      getColor: d => COLOR_PALETTE[parseInt(d.vehicle_id.substr(d.vehicle_id.length - 4)) % 24],
-      opacity: 0.3,
+
+      getColor: d => colorSchema(d.vehicle_id),
+      // widthUnits, // one of 'meters', 'common', and 'pixels'
+      widthScale: settings.TripTraceWidth,
       widthMinPixels: 2,
       // widthMaxPixels: 10,
-      // widthScale: d => 10,//d.speedmph,
-      getWidth: settings.TripTraceWidth, //d => d.speedmphs * 300,
-      rounded: true,
-      trailLength,
+      getWidth: d => d.speedmph_avg,
+      // rounded: true,
+      jointRounded: true,
+      capRounded: true,
+      billboard: false,
+      // miterLimit,
+      // _pathType, // One of null, 'loop' or 'open'
+
       currentTime: currentTime,
-      shadowEnabled: false
+      fadeTrail: true,
+      trailLength, //: settings.TripTraceWidth,
+      // shadowEnabled: true
     })
   ];
 
