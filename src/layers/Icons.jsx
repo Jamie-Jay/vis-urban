@@ -1,7 +1,7 @@
-import {IconLayer} from '@deck.gl/layers';
+import { IconLayer } from '@deck.gl/layers';
 import { easeBackInOut } from 'd3';
 
-import { inverseSpeed, colorSchema } from '../helper/controls'
+import { inverseSpeed, colorSchema } from '../helper/helperFuns'
 import { iconAtlas, iconMapping } from '../helper/constants'
 
 export const Icons = (props) => {

@@ -1,6 +1,6 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
-import { convertTimeToTimer, colorSchema, inverseSpeed } from '../helper/controls'
+import { convertTimeToTimer, colorSchema, inverseSpeed } from '../helper/helperFuns'
 // import { iconAtlas, iconMapping } from '../helper/constants'
 
 export function GeoJson(props) {

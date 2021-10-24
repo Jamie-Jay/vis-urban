@@ -1,8 +1,10 @@
 import React from 'react';
 import { MapLayers } from './MapLayers'
-import { MapStylePicker, START_TIME, COMMON_BUS_ROUTES, convertTimeToTimer } from './helper/controls';
 import { getPathFromJson, getPointsFromPath, getGeoJsonFromPath } from './helper/formatData'
 import { layerControl } from './helper/style';
+import { MapStylePicker } from './helper/controllers';
+import { START_TIME, COMMON_BUS_ROUTES } from './helper/constants';
+import { convertTimeToTimer } from './helper/helperFuns';
 
 const BASE_URL_CAMPUS = 'http://10.92.214.223/';
 const BASE_URL = 'https://api.buswatcher.org/';

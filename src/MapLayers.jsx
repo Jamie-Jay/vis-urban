@@ -9,19 +9,16 @@ import { Trips } from './layers/Trips'
 import { Hexagons } from './layers/Hexagons'
 import { GeoJson } from './layers/Geojson'
 import { Icons } from './layers/Icons'
-import { tooltipStyle, layerControl } from './helper/style'; // Mouseover interaction
-
-import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, DEFAULT_THEME } from './helper/constants'
-
 import { WithTime } from "./helper/Timer";
 
+import { tooltipStyle, layerControl } from './helper/style'; // Mouseover interaction
+import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, DEFAULT_THEME } from './helper/constants'
 import {
   // MapStylePicker,
   LayerControls, // create settings for our scatterplot layer
-  LAYER_CONTROLS,
-  DATA_CONTROLS,
   DataSourceControls
-} from './helper/controls';
+} from './helper/controllers';
+import { LAYER_CONTROLS, DATA_CONTROLS } from './helper/settings'
 
 // Trips can only be called in a function, it uses hooks
 export function MapLayers (props) {

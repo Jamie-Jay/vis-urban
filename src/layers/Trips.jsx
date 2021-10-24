@@ -1,6 +1,6 @@
 import { TripsLayer } from '@deck.gl/geo-layers';
 // import {PolygonLayer} from '@deck.gl/layers';
-import { convertTimeToTimer, colorSchema } from '../helper/controls'
+import { convertTimeToTimer, colorSchema } from '../helper/helperFuns'
 
 export const Trips = (props) => {
 

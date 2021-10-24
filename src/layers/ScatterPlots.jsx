@@ -1,5 +1,5 @@
 import CustomScatterplotLayer from './ScatterArrowPlotAnimate';
-import { convertTimeToTimer, inverseSpeed, colorSchema } from '../helper/controls'
+import { convertTimeToTimer, inverseSpeed, colorSchema } from '../helper/helperFuns'
 
 export const ScatterPlots = (props) => {
 

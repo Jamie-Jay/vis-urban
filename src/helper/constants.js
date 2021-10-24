@@ -1,7 +1,11 @@
-import {AmbientLight, PointLight, LightingEffect, FlyToInterpolator} from '@deck.gl/core';
+import { AmbientLight, PointLight, LightingEffect, FlyToInterpolator } from '@deck.gl/core';
 
 export const MAPBOX_TOKEN = 'pk.eyJ1IjoiamFtaWVqYXkiLCJhIjoiY2t1NXRmeWlnMW5kZjMwcWgzYWtxMDU5dCJ9.bT4fctFkg1XCdh_FeNy8PQ'
 // JSON.stringify(process.env.MapboxAccessToken);
+
+// console.log(new Date(2021,8,1).getTime()) // 2021-9-1: 1630468800000
+export const START_TIME = 1630468800000;
+export const COMMON_BUS_ROUTES = ['M15', 'Bx4', 'Bx17', 'Bx19'];
 
 export const COLOR_PALETTE = [
   [0xF4, 0xEC, 0x15],
@@ -77,6 +81,65 @@ export const INITIAL_VIEW_STATE = {
   */
   transitionDuration: 'auto'
 };
+
+export const MAPBOX_DEFAULT_MAPSTYLES = [
+  { 
+    label: 'Streets V10', 
+    value: 'mapbox://styles/mapbox/streets-v10' 
+  },
+  { 
+    label: 'Outdoors V10', 
+    value: 'mapbox://styles/mapbox/outdoors-v10' 
+  },
+  { 
+    label: 'Light V9', 
+    value: 'mapbox://styles/mapbox/light-v9' 
+  },
+  { 
+    label: 'Dark V9', 
+    value: 'mapbox://styles/mapbox/dark-v9' 
+  },
+  { 
+    label: 'Satellite V9', 
+    value: 'mapbox://styles/mapbox/satellite-v9' 
+  },
+  {
+    label: 'Satellite Streets V10',
+    value: 'mapbox://styles/mapbox/satellite-streets-v10'
+  },
+  {
+    label: 'Navigation Preview Day V4',
+    value: 'mapbox://styles/mapbox/navigation-preview-day-v4'
+  },
+  {
+    label: 'Navitation Preview Night V4',
+    value: 'mapbox://styles/mapbox/navigation-preview-night-v4'
+  },
+  {
+    label: 'Navigation Guidance Day V4',
+    value: 'mapbox://styles/mapbox/navigation-guidance-day-v4'
+  },
+  {
+    label: 'Navigation Guidance Night V4',
+    value: 'mapbox://styles/mapbox/navigation-guidance-night-v4'
+  },
+  {
+    label: 'dark-matter-nolabels',
+    value: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json'
+  },
+  {
+    label: 'dark-matter',
+    value: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
+  },
+  {
+    label: 'positron-nolabels',
+    value: 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json'
+  },
+  {
+    label: 'positron',
+    value: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+  }
+];
 
 const ICON_MAPPING = {
   marker: {x: 0, y: 0, width: 128, height: 128, mask: true},
