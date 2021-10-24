@@ -30,7 +30,7 @@ export const DATA_CONTROLS = {
     value: START_TIME
   },
   busRoutes: {
-    displayName: 'Bus Route',
+    displayName: 'Bus Route (multiple choice + Ctrl)',
     type: 'multi-selector',
     value: [BUS_ROUTES[0]]
   }
@@ -45,7 +45,7 @@ export const LAYER_CONTROLS = {
   TripTraceWidth: {
     displayName: 'Trip Trace Width = avarage speed * ',
     type: 'range',
-    value: 50,
+    value: 10,
     min: 0,
     max: 100
   },
@@ -59,8 +59,13 @@ export const LAYER_CONTROLS = {
   //   type: 'boolean',
   //   value: true
   // },
+  showGeoJson: {
+    displayName: 'Show Animated Bus Positions',
+    type: 'boolean',
+    value: false
+  },
   showIcons: {
-    displayName: 'Show Bus Positions',
+    displayName: 'Show Static Bus Positions',
     type: 'boolean',
     value: true
   },
@@ -84,11 +89,6 @@ export const LAYER_CONTROLS = {
     value: 5,
     min: 0,
     max: 20
-  },
-  showGeoJson: {
-    displayName: 'Show GeoJson',
-    type: 'boolean',
-    value: false
   },
   showHexagon: {
     displayName: 'Show Hexagon',

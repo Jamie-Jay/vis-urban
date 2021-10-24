@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StaticMap } from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
+import * as turf from '@turf/turf'
 
 import { Trips } from './layers/Trips'
 // import { ScatterPlots } from './layers/ScatterPlots'
@@ -101,19 +102,24 @@ export function MapLayers (props) {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
 
   useEffect(() => {
-    if (data.json && data.json.length > 0 && data.json[0].geometry && data.json[0].geometry.coordinates) {
+    if (data.path && data.path.length > 0) {
+      // calculate center point to transite the view
+      const center_point = turf.center(turf.points(
+        data.path.map( (p) => p.center_point.geometry.coordinates)
+      ));
+
       setViewState(
         {
           ...INITIAL_VIEW_STATE,
-          longitude: data.json[0].geometry.coordinates[0], // bus trips' center geo: get the middle of max and min geo, or for simplicity, cencented on the first point
-          latitude: data.json[0].geometry.coordinates[1],
+          longitude: center_point.geometry.coordinates[0],
+          latitude: center_point.geometry.coordinates[1],
         }
       )              
     }
     return () => {
       // cleanup
     }
-  }, [data.json])
+  }, [data.path])
 
   // time sync and control
   const currentTimeObj = WithTime(currMaxTime)

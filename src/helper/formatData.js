@@ -1,10 +1,12 @@
 import * as turf from '@turf/turf'
+// import { BX4_BUS_ROUTE0 } from './BX4_0'
 // rawData: from api json
 /** turn to 
  * [
       {
         "vehicle_id": ,
         speedmph_avg: ,
+        center_point: ,
         path:[
           [,],
           [,],
@@ -84,47 +86,58 @@ export function getPathFromJson (rawData) {
     []
   );
 
-  calcSpeed (rawData);
+  // calculate individual and average speed for each path
+  // and center point
+  calcSpeedAndCenter (rawData);
 
   return pathByVehicleId
 }
 
-function calcSpeed (rawData) {
+function calcDistanceDirect(start, stop) {
+  // let distance = turf.length(turf.lineString([start, stop]), {units: 'miles'}); // can be degrees, radians, miles, or kilometers
+  // or
+  let distance = turf.distance(start, stop, {units: 'miles'});
+  return distance
+}
+
+// TO EXPAND ON ALL THE BUS ROUTES
+function calcDistanceProjectOnLine(start, stop) {
+  // could have two points projecting to the same spots
+  // var sliced = turf.lineSlice(start, stop, BX4_BUS_ROUTE0.features[0]);
+  // let distance = turf.length(sliced, {units: 'miles'});
+  // // console.log(sliced, distance)
+  // return distance
+  return 0
+}
+
+function calcSpeedAndCenter (rawData) {
 
   if (pathByVehicleId === {}) {
     getPathFromJson (rawData)
   }
 
-  // console.log(pathByVehicleId)
-  let linestring = {
-    'type': 'Feature',
-    'geometry': {
-      'type': 'LineString',
-      'coordinates': [
-        [0, 0],
-        [0, 0]
-      ]
-    }
-  };
-
   for (let index = 0; index < pathByVehicleId.length; index++) {
     const positions = pathByVehicleId[index].path;
-    pathByVehicleId[index].speedmphs = [0] // inital the speedmphs
+    
+    // calculate center point
+    pathByVehicleId[index].center_point = turf.center(turf.points(positions));
 
+    // calculate speeds
+    pathByVehicleId[index].speedmphs = [0] // inital the speedmphs
     // only one positions
     if (positions.length < 2) {
       continue
     }
 
     // more than one positions
-    // add initial position
-    linestring.geometry.coordinates[0] = positions[0]
     for (let pos = 1; pos < positions.length; pos++) {
-      // replace the first or the second pos
-      linestring.geometry.coordinates[pos % 2] = positions[pos];
-
       // distance from the last point
-      let distance = turf.length(linestring, {units: 'miles'}); // can be degrees, radians, miles, or kilometers
+      // direct distances:
+      let distance = calcDistanceDirect(positions[pos - 1], positions[pos])
+      // or
+      // points project on the bus routes
+      // let distance = calcDistanceProjectOnLine(positions[pos - 1], positions[pos])
+
       // time diff
       let timeDiff = pathByVehicleId[index].timestamps[pos] - pathByVehicleId[index].timestamps[pos - 1]
       // speed
@@ -138,10 +151,8 @@ function calcSpeed (rawData) {
     pathByVehicleId[index].speedmphs[0] = pathByVehicleId[index].speedmphs[1]
 
     // calc average speed
-    linestring.geometry.coordinates[0] = positions[0]
-    linestring.geometry.coordinates[1] = positions.slice(-1)[0]
     pathByVehicleId[index].speedmph_avg = 
-      turf.length(linestring, {units: 'miles'}) / 
+      turf.length(turf.lineString(positions), {units: 'miles'}) / 
       (pathByVehicleId[index].timestamps.slice(-1) - pathByVehicleId[index].timestamps[0]) * 1000 * 60 * 60
   }
 }
