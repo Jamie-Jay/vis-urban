@@ -84,14 +84,31 @@ export function getPathFromJson (rawData) {
         })
         
       } else {
-        // if time diff with the previous record is 0, deem replicate records, skip the current record
-        if (currTimestamp !== accu[index].timestamps.slice(-1)[0]) { 
-          // add to the path and timestamps
+        // find the right index for the new point, ascending by time stamps
+        // assume the order has already roughtly been ascending 
+        if (currTimestamp > accu[index].timestamps.slice(-1)[0]) {
+          // if larger than the last timestamp, push
           accu[index].path.push(curr.geometry.coordinates)
           accu[index].timestamps.push(currTimestamp)
           accu[index].bearings.push(curr.properties.bearing)
-        } else {
+        } else if (currTimestamp !== accu[index].timestamps.slice(-1)[0]) {
+          // if equal, deem replicate records, skip the current record
           // console.log(curr.properties.vehicle_id, currTimestamp, ' replica - deleted')
+          
+        } else {
+          // smaller than the last record, search the right index backward
+          for (let i = accu[index].length -  1; i >= 0; i++) {
+            if (currTimestamp < accu[index].timestamps[i]) {
+              // insert the records
+              accu[index].path.splice(i, 0, curr.geometry.coordinates)
+              accu[index].timestamps.splice(i, 0, currTimestamp)
+              accu[index].bearings.splice(i, 0, curr.properties.bearing)
+              break
+            } else if (currTimestamp === accu[index].timestamps[i]) {
+              // replicate record, ignore
+              break
+            }
+          }
         }
       }
 
@@ -130,7 +147,6 @@ function calcSpeedAndCenter (rawData) {
     getPathFromJson (rawData)
   }
 
-  // assume the raw data is always ordered by timestamps
   for (let index = 0; index < pathByVehicleId.length; index++) {
     const positions = pathByVehicleId[index].path;
     

@@ -4,7 +4,6 @@ import { getPathFromJson, getPointsFromPath, getGeoJsonFromPath } from './helper
 import { layerControl } from './helper/style';
 import { MapStylePicker } from './helper/controllers';
 import { START_TIME, COMMON_BUS_ROUTES } from './helper/constants';
-import { convertTimeToTimer } from './helper/helperFuns';
 
 const BASE_URL_CAMPUS = 'http://10.92.214.223/';
 const BASE_URL = 'https://api.buswatcher.org/';
@@ -79,21 +78,16 @@ export default class App extends React.Component{
             }
           }
         },
-        () => {
-          this.setDataToShow(); 
-          return true;
-        }
+        () => this.setDataToShow()
         );
       } else {
         alert('Data points for ' + new Date(selectedTimeStamp) + ' ' + busRoute + ' is empty. Please choose another timepoint or bus route.');
-        return false;
       }
     }, err => {
       // Status Code: 500 Internal Server Error
       console.log(err); 
       alert('Data points for ' + new Date(selectedTimeStamp) + ' ' + busRoute + ' is not available.', err);
       // this.getApiData(0, 0, readLocalFile = true)
-      return false;
     })
 
     /** url exceptions:
@@ -117,6 +111,7 @@ export default class App extends React.Component{
     let pathList = []
     let pointsList = []
     let dataShowedLabel = []
+    let times = [] // to update max and min timestamps
 
     const { dataJsonCollection } = this.state;
 
@@ -127,24 +122,13 @@ export default class App extends React.Component{
         pathList.push(...dataJsonCollection[key].path);
         pointsList.push(...dataJsonCollection[key].points);
 
+        // collect each path's min and max timestamps
+        for (let i = 0; i < dataJsonCollection[key].path.length; i++) {
+          times.push(dataJsonCollection[key].path[i].timestamps[0])
+          times.push(dataJsonCollection[key].path[i].timestamps.slice(-1)[0])
+        }
         dataShowedLabel.push(key) 
       }
-    }
-
-    let maxTime = 0;
-    let minTime = 0;
-    // update max and min timestamps
-    if (pointsList) {
-      const timestamps = pointsList.reduce(
-        (ts, trip) => {
-          ts.push(trip.timestamp);
-          return ts; 
-        },
-        []
-      );
-    
-      minTime = Math.min(...timestamps);
-      maxTime = Math.max(...timestamps);
     }
 
     this.setState({
@@ -154,8 +138,8 @@ export default class App extends React.Component{
         path: pathList,
         points: pointsList
       },
-      currMinTime: convertTimeToTimer(minTime),
-      currMaxTime: convertTimeToTimer(maxTime),
+      currMinTime: Math.min(...times),
+      currMaxTime: Math.max(...times),
     },
     () => this.updateDataLabel(dataShowedLabel)
     )
@@ -191,7 +175,7 @@ export default class App extends React.Component{
     // get all the possible combination of timestamp and busroute
     // then compare with the keys in data collection
     const { dataJsonCollection} = this.state;
-    let hasFail = false;
+    let hasUpdate = false;
 
     // set all show status to false
     for (let ele in dataJsonCollection) {
@@ -207,14 +191,12 @@ export default class App extends React.Component{
         dataJsonCollection[currKey].show = true;
       } else {
         // request url
-        let fetchSuccess = this.getApiData(selectedTimeStamp, element);
-        if (fetchSuccess != true && !hasFail) {
-          hasFail = true
-        }
+        this.getApiData(selectedTimeStamp, element);
+        hasUpdate = true
       }
     }
 
-    return !hasFail
+    return hasUpdate
   }
 
   setSelectedDataSource = (newChoice) => {

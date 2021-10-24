@@ -9,7 +9,7 @@ export const DATA_CONTROLS = {
   busRoutes: {
     displayName: 'Bus Route (multiple choice + Ctrl)',
     type: 'multi-selector',
-    value: [COMMON_BUS_ROUTES]
+    value: COMMON_BUS_ROUTES
   }
 };
 

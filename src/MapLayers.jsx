@@ -19,16 +19,15 @@ import {
   DataSourceControls
 } from './helper/controllers';
 import { LAYER_CONTROLS, DATA_CONTROLS } from './helper/settings'
+import { convertTimeToTimer, setTimerStart } from './helper/helperFuns';
 
 // Trips can only be called in a function, it uses hooks
 export function MapLayers (props) {
   // trips={this.state.data} points={this.state.points} mapStyle={this.state.style}
-  const {data, mapStyle, 
-    setSelectedDataSource,
-    currMinTime,
-    currMaxTime,
-  } = props
-
+  const { data, mapStyle, setSelectedDataSource } = props
+  setTimerStart(props.currMinTime) // adjust the start time for timer to 0, in case of negative/huge timer
+  const currMinTime = convertTimeToTimer(props.currMinTime);
+  const currMaxTime = convertTimeToTimer(props.currMaxTime);
   // reading setting from LAYER_CONTROLS and DATA_CONTROLS
   const [settings, setSettings] = useState(
     Object.keys(LAYER_CONTROLS).reduce(

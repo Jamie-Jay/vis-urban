@@ -1,7 +1,13 @@
 import { START_TIME, COLOR_PALETTE } from './constants'
 
+let TimerStart = START_TIME;
+
+export const setTimerStart = (start) => {
+  TimerStart = start
+}
+
 export const convertTimeToTimer = (timestamp) => {
-  return (timestamp - START_TIME) / 1000
+  return (timestamp - TimerStart) / 1000
 }
 
 export const inverseSpeed = (speedmph) => {
