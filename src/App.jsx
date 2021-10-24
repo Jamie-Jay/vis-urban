@@ -30,7 +30,13 @@ export default class App extends React.Component{
     selectedTimeStamp: START_TIME,
     busRoutes: [],
     currMaxTime: 4000,
-    currMinTime: 0,
+    currMinTime: 0
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return nextState.selectedTimeStamp !== this.state.selectedTimeStamp 
+          || nextState.busRoutes !== this.state.busRoutes
+          || nextState.style !== this.state.style
   }
 
   componentDidMount(){
@@ -71,31 +77,25 @@ export default class App extends React.Component{
             }
           }
         },
-        () => this.setDataToShow()
+        () => {
+          this.setDataToShow(); 
+          return true;
+        }
         );
       } else {
         alert('Data points for ' + new Date(selectedTimeStamp) + ' ' + busRoute + ' is empty. Please choose another timepoint or bus route.');
+        return false;
       }
     }, err => {
       // Status Code: 500 Internal Server Error
       console.log(err); 
       alert('Data points for ' + new Date(selectedTimeStamp) + ' ' + busRoute + ' is not available.', err);
       // this.getApiData(0, 0, readLocalFile = true)
+      return false;
     })
 
     /** url exceptions:
-     * http://api.buswatcher.org/api/v2/nyc/2021/9/15/12/Bx2/buses/geojson: Internal Server Error
-     * {
-          "type": "Shipment",
-          "Status": "False",
-          "Request": {
-              "Year": "2020",
-              "Month": "10",
-              "Day": "15",
-              "Hour": "0",
-              "Route": "M1"
-          }
-      }
+     * http://api.buswatcher.org/api/v2/nyc/2021/9/15/12/Bx2/buses/geojson: { "type": "Shipment", "Status": "False", "Request": { "Year": "2020", "Month": "10", "Day": "15", "Hour": "0", "Route": "M1" }}
      * http://api.buswatcher.org/api/v2/nyc/2021/9/27/1/Bx17/buses/geojson: { "type": "FeatureCollection", "features": [] }
      */
   }
@@ -131,7 +131,7 @@ export default class App extends React.Component{
 
     let maxTime = 0;
     let minTime = 0;
-    // update max and min time transformed stamps (not real timestamp)
+    // update max and min timestamps
     if (pointsList) {
       const timestamps = pointsList.reduce(
         (ts, trip) => {
@@ -189,7 +189,7 @@ export default class App extends React.Component{
     // get all the possible combination of timestamp and busroute
     // then compare with the keys in data collection
     const { dataJsonCollection} = this.state;
-    let hasUpdate = false;
+    let hasFail = false;
 
     // set all show status to false
     for (let ele in dataJsonCollection) {
@@ -205,12 +205,14 @@ export default class App extends React.Component{
         dataJsonCollection[currKey].show = true;
       } else {
         // request url
-        this.getApiData (selectedTimeStamp, element);
-        hasUpdate = true
+        let fetchSuccess = this.getApiData(selectedTimeStamp, element);
+        if (fetchSuccess != true && !hasFail) {
+          hasFail = true
+        }
       }
     }
 
-    return hasUpdate
+    return !hasFail
   }
 
   setSelectedDataSource = (newChoice) => {

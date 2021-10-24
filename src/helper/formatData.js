@@ -130,6 +130,7 @@ function calcSpeedAndCenter (rawData) {
     getPathFromJson (rawData)
   }
 
+  // assume the raw data is always ordered by timestamps
   for (let index = 0; index < pathByVehicleId.length; index++) {
     const positions = pathByVehicleId[index].path;
     
