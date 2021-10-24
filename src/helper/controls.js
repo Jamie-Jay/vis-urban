@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { mapStylePicker, layerControl } from './style';
+import { mapStylePicker } from './style';
 import { COLOR_PALETTE } from '../helper/constants'
 
 import DatePicker from 'react-datepicker';
@@ -9,7 +9,7 @@ import { NYC_BUS_ROUTES_BY_COLOR } from './BusRoutes'
 
 // console.log(new Date(2021,8,1).getTime()) // 2021-9-1: 1630468800000
 export const START_TIME = 1630468800000;
-export const BUS_ROUTES = ['M15', 'Bx4', 'Bx17', 'Bx19'];
+export const COMMON_BUS_ROUTES = ['M15', 'Bx4', 'Bx17', 'Bx19'];
 
 export const convertTimeToTimer = (timestamp) => {
   return (timestamp - START_TIME) / 1000
@@ -19,8 +19,13 @@ export const inverseSpeed = (speedmph) => {
   return speedmph === 0 ? 0 : (100 / speedmph > 50 ? 50 : 100 / speedmph) // do not inverse when speed = 0 and speed no faster than 50
 }
 
-export const colorSchema = (vehicle_id) => {
-  return COLOR_PALETTE[parseInt(vehicle_id.substr(vehicle_id.length - 4)) % COLOR_PALETTE.length]
+export const colorSchema = (vehicle_id, alpha = null) => {
+  let vehicleId = parseInt(vehicle_id.split('_').slice(-1)[0])
+  return alpha == null ? COLOR_PALETTE[vehicleId % COLOR_PALETTE.length]
+  :[
+    ...COLOR_PALETTE[vehicleId % COLOR_PALETTE.length],
+    alpha
+  ]
 }
 
 export const DATA_CONTROLS = {
@@ -32,7 +37,7 @@ export const DATA_CONTROLS = {
   busRoutes: {
     displayName: 'Bus Route (multiple choice + Ctrl)',
     type: 'multi-selector',
-    value: [BUS_ROUTES[0]]
+    value: [COMMON_BUS_ROUTES]
   }
 };
 
@@ -62,12 +67,12 @@ export const LAYER_CONTROLS = {
   showGeoJson: {
     displayName: 'Show Animated Bus Positions',
     type: 'boolean',
-    value: false
+    value: true
   },
   showIcons: {
     displayName: 'Show Static Bus Positions',
     type: 'boolean',
-    value: true
+    value: false
   },
   IconsSpeedThreshold: {
     displayName: 'Warning Icon for Speed <= mph',
@@ -218,21 +223,21 @@ export class DataSourceControls extends Component {
   }
 
   render() {
-    const { title, settings, propTypes = {} } = this.props;
+    const { title, settings, propCtrls = {} } = this.props;
 
     return (
       <div>
         {title && <h4>{title}</h4>}
-        {Object.keys(propTypes).map(key => (
+        {Object.keys(propCtrls).map(key => (
           <div key={key}>
-            <label>{propTypes[key].displayName}</label>
+            <label>{propCtrls[key].displayName}</label>
             <div style={{ display: 'inline-block', float: 'right' }}>
-              {settings[key]}
+              {Array.isArray(settings[key]) ? settings[key].join(', ') : settings[key]}
             </div>
             <Setting
               settingName={key}
               value={this.state[key]}
-              propType={propTypes[key]}
+              propCtrl={propCtrls[key]}
               onChange={this._onValueChange}
             />
           </div>
@@ -254,21 +259,21 @@ export class LayerControls extends Component {
   }
 
   render() {
-    const { title, settings, propTypes = {} } = this.props;
+    const { title, settings, propCtrls = {} } = this.props;
 
     return (
       <div>
         {title && <h4>{title}</h4>}
-        {Object.keys(propTypes).map(key => (
+        {Object.keys(propCtrls).map(key => (
           <div key={key}>
-            <label>{propTypes[key].displayName}</label>
+            <label>{propCtrls[key].displayName}</label>
             <div style={{ display: 'inline-block', float: 'right' }}>
               {settings[key]}
             </div>
             <Setting
               settingName={key}
               value={settings[key]}
-              propType={propTypes[key]}
+              propCtrl={propCtrls[key]}
               onChange={this._onValueChange}
             />
           </div>
@@ -279,9 +284,9 @@ export class LayerControls extends Component {
 }
 
 const Setting = props => {
-  const { propType } = props;
-  if (propType && propType.type) {
-    switch (propType.type) {
+  const { propCtrl } = props;
+  if (propCtrl && propCtrl.type) {
+    switch (propCtrl.type) {
       case 'range':
         return <Slider {...props} />;
 
@@ -318,8 +323,8 @@ const Checkbox = ({ settingName, value, onChange }) => {
   );
 };
 
-const Slider = ({ settingName, value, propType, onChange }) => {
-  const { max = 100 } = propType;
+const Slider = ({ settingName, value, propCtrl, onChange }) => {
+  const { max = 100 } = propCtrl;
 
   return (
     <div key={settingName}>
@@ -350,7 +355,7 @@ const SingleSelector = ({ settingName, value, onChange }) => {
           value={value}
           onChange={e => onChange(settingName, e.target.value)}
         >
-          {BUS_ROUTES.map(route => (
+          {COMMON_BUS_ROUTES.map(route => (
             <option key={route} value={route}>
               {route}
             </option>
@@ -387,7 +392,7 @@ const MultiSelector = ({ settingName, value, onChange }) => {
           >
           <optgroup key='Common' label='Common'>
             {
-              BUS_ROUTES.map(route => (
+              COMMON_BUS_ROUTES.map(route => (
                 <option key={route} value={route}>
                   {route}
                 </option>

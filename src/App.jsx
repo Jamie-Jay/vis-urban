@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapLayers } from './MapLayers'
-import { MapStylePicker, START_TIME, BUS_ROUTES, convertTimeToTimer } from './helper/controls';
-import { getPathFromJson, getPointsFromPath } from './helper/formatData'
+import { MapStylePicker, START_TIME, COMMON_BUS_ROUTES, convertTimeToTimer } from './helper/controls';
+import { getPathFromJson, getPointsFromPath, getGeoJsonFromPath } from './helper/formatData'
 import { layerControl } from './helper/style';
 
 const BASE_URL_CAMPUS = 'http://10.92.214.223/';
@@ -28,13 +28,13 @@ export default class App extends React.Component{
     dataToShow: [],
     style: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
     selectedTimeStamp: START_TIME,
-    busRoutes: BUS_ROUTES,
+    busRoutes: [],
     currMaxTime: 4000,
     currMinTime: 0,
   }
 
   componentDidMount(){
-    this.updateDataCollection(this.state.selectedTimeStamp, this.state.busRoutes)
+    this.updateDataCollection(START_TIME, COMMON_BUS_ROUTES)
   }
 
   getApiData = async (selectedTimeStamp, busRoute, readLocalFile = false) => {
@@ -55,7 +55,7 @@ export default class App extends React.Component{
 
       // not empty data points
       if (data['features'] && data['features'].length > 0) {
-        const {path, points} = this._processData(data['features']);
+        const {json, path, points} = this._processData(data['features']);
 
         const dataKey = this.getDataKey(selectedTimeStamp, busRoute);
         this.setState((previousState) => {
@@ -64,9 +64,9 @@ export default class App extends React.Component{
               ...previousState.dataJsonCollection,
               [dataKey] : {
                 show: true,             // if show on the map
-                json: data['features'], // raw geojson
+                json: json,             // geojson layer format
                 path: path,             // trip format data
-                points: points          // scatterplot/hexagons format data
+                points: points          // scatterplot/hexagons/icon format data
               }
             }
           }
@@ -104,8 +104,9 @@ export default class App extends React.Component{
 
     const path = getPathFromJson(rawData)
     const points = getPointsFromPath(rawData)
+    const json = getGeoJsonFromPath(rawData)
 
-    return { path, points }
+    return { json, path, points }
   };
 
   setDataToShow() {

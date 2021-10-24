@@ -1,10 +1,24 @@
-import * as turf from '@turf/turf'
+import { 
+  center, 
+  points, 
+  length, 
+  distance, 
+  lineString, 
+  // lineSlice, 
+  // buffer, 
+  // combine,
+  // getGeom,
+  // getCoord,
+  // point
+ } from '@turf/turf'
 // import { BX4_BUS_ROUTE0 } from './BX4_0'
+
 // rawData: from api json
 /** turn to 
  * [
       {
         "vehicle_id": ,
+        route: ,
         speedmph_avg: ,
         center_point: ,
         path:[
@@ -63,7 +77,7 @@ export function getPathFromJson (rawData) {
         // didn't find the vehicle, create new
         accu.push({
           vehicle_id: curr.properties.vehicle_id,
-          route_long: curr.properties.route_long,
+          route: curr.properties.route,
           path: [curr.geometry.coordinates],
           timestamps: [currTimestamp],
           bearings: [curr.properties.bearing]
@@ -94,19 +108,19 @@ export function getPathFromJson (rawData) {
 }
 
 function calcDistanceDirect(start, stop) {
-  // let distance = turf.length(turf.lineString([start, stop]), {units: 'miles'}); // can be degrees, radians, miles, or kilometers
+  // let dist = length(lineString([start, stop]), {units: 'miles'}); // can be degrees, radians, miles, or kilometers
   // or
-  let distance = turf.distance(start, stop, {units: 'miles'});
-  return distance
+  let dist = distance(start, stop, {units: 'miles'});
+  return dist
 }
 
 // TO EXPAND ON ALL THE BUS ROUTES
 function calcDistanceProjectOnLine(start, stop) {
   // could have two points projecting to the same spots
-  // var sliced = turf.lineSlice(start, stop, BX4_BUS_ROUTE0.features[0]);
-  // let distance = turf.length(sliced, {units: 'miles'});
-  // // console.log(sliced, distance)
-  // return distance
+  // var sliced = lineSlice(start, stop, BX4_BUS_ROUTE0.features[0]);
+  // let dist = length(sliced, {units: 'miles'});
+  // // console.log(sliced, dist)
+  // return dist
   return 0
 }
 
@@ -120,7 +134,7 @@ function calcSpeedAndCenter (rawData) {
     const positions = pathByVehicleId[index].path;
     
     // calculate center point
-    pathByVehicleId[index].center_point = turf.center(turf.points(positions));
+    pathByVehicleId[index].center_point = center(points(positions));
 
     // calculate speeds
     pathByVehicleId[index].speedmphs = [0] // inital the speedmphs
@@ -152,7 +166,7 @@ function calcSpeedAndCenter (rawData) {
 
     // calc average speed
     pathByVehicleId[index].speedmph_avg = 
-      turf.length(turf.lineString(positions), {units: 'miles'}) / 
+      length(lineString(positions), {units: 'miles'}) / 
       (pathByVehicleId[index].timestamps.slice(-1) - pathByVehicleId[index].timestamps[0]) * 1000 * 60 * 60
   }
 }
@@ -164,6 +178,7 @@ function calcSpeedAndCenter (rawData) {
  *    {
  *      position: [,], 
  *      vehicle_id: '', 
+ *      route: '',
  *      timestamp: ,
  *      bearing: number, 
  *      speedmph: number
@@ -196,7 +211,7 @@ export function getPointsFromJson (rawData) {
       accu.push({
         position: curr.geometry.coordinates,
         vehicle_id: curr.properties.vehicle_id,
-        route_long: curr.properties.route_long,
+        route: curr.properties.route,
         timestamp: currTimestamp,
         bearing: curr.properties.bearing,
         speedmph: speed,
@@ -220,11 +235,61 @@ export function getPointsFromPath (rawData) {
         accu.push({
           position: curr.path[index],
           vehicle_id: curr.vehicle_id,
-          route_long: curr.route_long,
+          route: curr.route,
           timestamp: curr.timestamps[index],
           bearing: curr.bearings[index],
           speedmph: curr.speedmphs[index],
           // passenger_count
+        })
+      }
+      return accu;
+    },
+    []
+  );
+}
+
+/**
+[
+  {
+    geometry: {
+      type: 'Point', 
+      coordinates: Array(2)
+    },
+    properties: {
+      route: 'BX2', 
+      timestamp: '2021-09-20 11:59:54-04:00', 
+      route_long: 'MTA NYCT_BX2', 
+      direction: '0', 
+      service_date: '2021-09-20', 
+      ...
+    },
+    type: "Feature"
+  },
+  ...
+]
+ */
+export function getGeoJsonFromPath (rawData) {
+
+  if (pathByVehicleId === {}) {
+    getPathFromJson (rawData)
+  }
+
+  return pathByVehicleId.reduce(
+    (accu, curr) => {
+      for (let index = 0; index < curr.path.length; index++) {
+        accu.push({
+          geometry: {
+            type: 'Point', 
+            coordinates: curr.path[index]
+          },
+          properties: {
+            vehicle_id: curr.vehicle_id,
+            route: curr.route,
+            timestamp: curr.timestamps[index],
+            bearing: curr.bearings[index],
+            speedmph: curr.speedmphs[index]
+          },
+          type: "Feature"
         })
       }
       return accu;

@@ -2,14 +2,7 @@ import {IconLayer} from '@deck.gl/layers';
 import { easeBackInOut } from 'd3';
 
 import { inverseSpeed, colorSchema } from '../helper/controls'
-
-const ICON_MAPPING = {
-  marker: {x: 0, y: 0, width: 128, height: 128, mask: true},
-  markerSlow: {x: 128, y: 0, width: 128, height: 128, mask: false},
-};
-
-const iconMapping = ICON_MAPPING;
-const iconAtlas = 'data/icon-atlas.png';
+import { iconAtlas, iconMapping } from '../helper/constants'
 
 export const Icons = (props) => {
 
@@ -55,7 +48,11 @@ export const Icons = (props) => {
           getSize:  {
             duration: 3000,
             easing: easeBackInOut,
-          }
+          },
+          // getPosition: { 
+          //   duration: 1000,
+          //   // enter: value => {console.log(value); return [value[0], value[1], value[2]]},
+          // }
         }
       })
   ]

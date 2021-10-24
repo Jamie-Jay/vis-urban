@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StaticMap } from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
-import * as turf from '@turf/turf'
+import { center, points, getCoord } from '@turf/turf'
 
 import { Trips } from './layers/Trips'
 // import { ScatterPlots } from './layers/ScatterPlots'
@@ -68,26 +68,27 @@ export function MapLayers (props) {
             `${object.properties.vehicle_id}`,
             `index: ${index + 1}`,
             // `agency: ${object.properties.agency}`,
-            `route: ${object.properties.route_long}`,
+            `route: ${object.properties.route}`,
             `bearing: ${object.properties.bearing.toFixed(2)}`,
-            `destination: ${object.properties.destination_name}`,
+            // `destination: ${object.properties.destination_name}`,
             // `direction: ${object.properties.direction}`,
-            `trip id: ${object.properties.trip_id}`,
-            `time: ${object.properties.timestamp}`
+            // `trip id: ${object.properties.trip_id}`,
+            `speed: ${object.properties.speedmph.toFixed(2)} mph`,
+            `time: ${new Date(object.properties.timestamp).toString()}`
           ] // geojson format
           : 
           object.path ? 
             [
               `${object.vehicle_id}`,
               `index: ${index + 1}`,
-              `route: ${object.route_long}`,
+              `route: ${object.route}`,
               `average speed: ${object.speedmph_avg.toFixed(2)} mph`
             ] // trip layer format
             : 
             [
               `${object.vehicle_id}`,
               `index: ${index + 1}`,
-              `route: ${object.route_long}`,
+              `route: ${object.route}`,
               `bearing: ${object.bearing.toFixed(2)}`,
               `speed: ${object.speedmph.toFixed(2)} mph`,
               `time: ${new Date(object.timestamp).toString()}`
@@ -104,15 +105,15 @@ export function MapLayers (props) {
   useEffect(() => {
     if (data.path && data.path.length > 0) {
       // calculate center point to transite the view
-      const center_point = turf.center(turf.points(
-        data.path.map( (p) => p.center_point.geometry.coordinates)
+      const center_point = center(points(
+        data.path.map( (p) => getCoord(p.center_point) )
       ));
 
       setViewState(
         {
           ...INITIAL_VIEW_STATE,
-          longitude: center_point.geometry.coordinates[0],
-          latitude: center_point.geometry.coordinates[1],
+          longitude: getCoord(center_point)[0],
+          latitude: getCoord(center_point)[1],
         }
       )              
     }
@@ -155,7 +156,8 @@ export function MapLayers (props) {
     GeoJson({
       data: data.json,
       settings: settings,
-      onHover: hover => _onHover(hover)
+      currentTime: currentTimeObj.getCurrentTime(),
+      onHover: hover => _onHover(hover),
     })
   ).concat(  
     Icons({
@@ -180,7 +182,7 @@ export function MapLayers (props) {
       <div className="layer-controls" style ={layerControl}>
         <DataSourceControls
           settings={settings}
-          propTypes={DATA_CONTROLS}
+          propCtrls={DATA_CONTROLS}
           onChange={(newSetting) => {
             setSettings({
               ...settings,
@@ -191,7 +193,7 @@ export function MapLayers (props) {
           />
         <LayerControls
           settings={settings}
-          propTypes={LAYER_CONTROLS}
+          propCtrls={LAYER_CONTROLS}
           onChange={(settingName, newValue) => {
             setSettings({
               ...settings,
@@ -206,6 +208,7 @@ export function MapLayers (props) {
         // getTooltip={({object}) => object && object.vehicle_id} // Deck automatically renders a tooltip if the getTooltip callback is supplied
         effects={DEFAULT_THEME.effects}
         initialViewState={viewState}
+        // onViewStateChange={(currView) => setViewState(currView.viewState) }
         controller={true} // for a map to be interactive, using the default MapController https://deck.gl/#/documentation/deckgl-api-reference/controllers/controller?section=event-handling
       >
         {/* By using react-map-gl as a child component to the DeckGL class, 
@@ -220,10 +223,10 @@ export function MapLayers (props) {
         />
       </DeckGL>
       {
-        (settings.showScatterplot || settings.showTripTrace) ?
+        (settings.showGeoJson || settings.showTripTrace) ?
           <span style={{...layerControl, top: '0px', right: '300px'}}>
           <div style={{ width: '100%', marginTop: "1rem" }}>
-            <b>Trace & Scatterplot Controller</b>
+            <b>Trace & Animation Controller</b>
             <input
               style={{ width: '100%' }}
               type="range"
