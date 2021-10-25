@@ -23,7 +23,7 @@ export function GeoJson(props) {
     new GeoJsonLayer({
       id: 'geojson-layer',
       data,
-      visible: settings.showGeoJson,
+      visible: settings.showPositions === 2,
       pickable: true,
       onHover,
       autoHighlight: true,

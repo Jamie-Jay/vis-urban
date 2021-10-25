@@ -12,7 +12,7 @@ export const Icons = (props) => {
       new IconLayer({
         id: 'icon',
         data,
-        visible: settings.showIcons,
+        visible: settings.showPositions === 1,
         pickable: true,
         // opacity,
         onHover,

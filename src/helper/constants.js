@@ -63,6 +63,8 @@ export const DEFAULT_THEME = {
 };
 
 export const INITIAL_VIEW_STATE = {
+  width: window.innerWidth,
+  height: window.innerHeight,
   longitude: -73.905477,
   latitude: 40.849802,
   zoom: 13,

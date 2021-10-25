@@ -4,23 +4,7 @@ import { getPathFromJson, getPointsFromPath, getGeoJsonFromPath } from './helper
 import { layerControl } from './helper/style';
 import { MapStylePicker } from './helper/controllers';
 import { START_TIME, COMMON_BUS_ROUTES } from './helper/constants';
-
-const BASE_URL_CAMPUS = 'http://10.92.214.223/';
-const BASE_URL = 'https://api.buswatcher.org/';
-
-function getUrl(selectedTimeStamp, busRoute) {
-    // combine url
-    const dt = new Date(selectedTimeStamp)
-    return (
-      BASE_URL + 'api/v2/nyc/'
-      + dt.getFullYear() + '/'
-      + ( dt.getMonth() + 1 ) + '/'
-      + dt.getDate() + '/'
-      + dt.getHours() + '/'
-      + busRoute
-      + '/buses/geojson'
-    );
-}
+import { getUrl } from './helper/helperFuns'
 
 export default class App extends React.Component{
 

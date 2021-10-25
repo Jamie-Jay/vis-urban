@@ -63,7 +63,9 @@ export class DataSourceControls extends Component {
             />
           </div>
         ))}
-      <button style={{ display: 'inline-block', float: 'right' }} onClick={this.handleClick}>Data OK</button>
+        <button style={{ display: 'inline-block', float: 'right' }} 
+                onClick={this.handleClick}
+                >Data OK</button>
       </div>
     )
   }
@@ -114,6 +116,9 @@ const Setting = props => {
       case 'boolean':
         return <Checkbox {...props} />;
 
+      case 'radio-list':
+        return <RadioList {...props} />;
+
       case 'single-selector':
         return <SingleSelector {...props} />;
 
@@ -131,15 +136,35 @@ const Setting = props => {
 
 const Checkbox = ({ settingName, value, onChange }) => {
   return (
-    <div key={settingName}>
-      <div className="input-group">
-        <input
-          type="checkbox"
-          id={settingName}
-          checked={value}
-          onChange={e => onChange(settingName, e.target.checked)}
-        />
-      </div>
+    <div className="input-group" key={settingName}>
+      <input
+        type="checkbox"
+        id={settingName}
+        checked={value}
+        onChange={e => onChange(settingName, e.target.checked)}
+      />
+    </div>
+  );
+};
+
+const RadioList = ({ settingName, value, propCtrl = {}, onChange }) => {
+  return (
+    <div className="input-group" key={settingName} 
+          onChange={ e => onChange(settingName, Number(e.target.value)) }
+          >
+      {
+        Object.keys(propCtrl.options).map( (option) => 
+          <div key={option}>
+              <input 
+                type="radio" 
+                value={propCtrl.options[option]} 
+                name={settingName} 
+                defaultChecked={propCtrl.options[option] === value}
+              />
+              <label>{option}</label>
+          </div>
+        )
+      }
     </div>
   );
 };
@@ -148,20 +173,16 @@ const Slider = ({ settingName, value, propCtrl, onChange }) => {
   const { max = 100 } = propCtrl;
 
   return (
-    <div key={settingName}>
-      <div className="input-group">
-        <div>
-          <input
-            type="range"
-            id={settingName}
-            min={0}
-            max={max}
-            step={max / 100}
-            value={value}
-            onChange={e => onChange(settingName, Number(e.target.value))}
-          />
-        </div>
-      </div>
+    <div className="input-group" key={settingName}>
+        <input
+          type="range"
+          id={settingName}
+          min={0}
+          max={max}
+          step={max / 100}
+          value={value}
+          onChange={e => onChange(settingName, Number(e.target.value))}
+        />
     </div>
   );
 };
@@ -169,20 +190,18 @@ const Slider = ({ settingName, value, propCtrl, onChange }) => {
 // single pick
 const SingleSelector = ({ settingName, value, onChange }) => {
   return (
-    <div key={settingName}>
-      <div className="input-group">
-        <select
-          type='select-one'
-          value={value}
-          onChange={e => onChange(settingName, e.target.value)}
-        >
-          {COMMON_BUS_ROUTES.map(route => (
-            <option key={route} value={route}>
-              {route}
-            </option>
-          ))}
-        </select>
-      </div>
+    <div className="input-group" key={settingName}>
+      <select
+        type='select-one'
+        value={value}
+        onChange={e => onChange(settingName, e.target.value)}
+      >
+        {COMMON_BUS_ROUTES.map(route => (
+          <option key={route} value={route}>
+            {route}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
@@ -202,41 +221,39 @@ const MultiSelector = ({ settingName, value, onChange }) => {
   }
 
   return (
-    <div key={settingName}>
-      <div className="input-group">
-        <select
-          type='select-multiple'
-          id="multi-selector"
-          multiple
-          size={5}
-          onChange={ changeOptions }
-          >
-          <optgroup key='Common' label='Common'>
-            {
-              COMMON_BUS_ROUTES.map(route => (
-                <option key={route} value={route}>
-                  {route}
-                </option>
-              ))
-            }
-          </optgroup>
-
+    <div className="input-group" key={settingName}>
+      <select
+        type='select-multiple'
+        id="multi-selector"
+        multiple
+        size={5}
+        onChange={ changeOptions }
+        >
+        <optgroup key='Common' label='Common'>
           {
-            Object.keys(NYC_BUS_ROUTES_BY_COLOR).map((key,i)=>{
-              var items = NYC_BUS_ROUTES_BY_COLOR[key].map((s,index)=>{
-                return (
-                  <option key={index} style={{color: {key}}}>{s.route_id}</option>
-                )
-              })
-              return(
-                <optgroup key={key} label={key}>
-                  {items}
-                </optgroup> 
+            COMMON_BUS_ROUTES.map(route => (
+              <option key={route} value={route}>
+                {route}
+              </option>
+            ))
+          }
+        </optgroup>
+
+        {
+          Object.keys(NYC_BUS_ROUTES_BY_COLOR).map((key,i)=>{
+            var items = NYC_BUS_ROUTES_BY_COLOR[key].map((s,index)=>{
+              return (
+                <option key={index} style={{color: {key}}}>{s.route_id}</option>
               )
             })
-          }
-        </select>
-      </div>
+            return(
+              <optgroup key={key} label={key}>
+                {items}
+              </optgroup>
+            )
+          })
+        }
+      </select>
     </div>
   );
 }

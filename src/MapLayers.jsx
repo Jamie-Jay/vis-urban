@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { StaticMap } from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
-import { center, points, getCoord } from '@turf/turf'
+import { WebMercatorViewport } from '@deck.gl/core';
+import { center, points, getCoord, lineString, bbox } from '@turf/turf'
 
 import { Trips } from './layers/Trips'
 // import { ScatterPlots } from './layers/ScatterPlots'
@@ -25,9 +26,13 @@ import { convertTimeToTimer, setTimerStart } from './helper/helperFuns';
 export function MapLayers (props) {
   // trips={this.state.data} points={this.state.points} mapStyle={this.state.style}
   const { data, mapStyle, setSelectedDataSource } = props
+
+  // time sync and control
   setTimerStart(props.currMinTime) // adjust the start time for timer to 0, in case of negative/huge timer
   const currMinTime = convertTimeToTimer(props.currMinTime);
   const currMaxTime = convertTimeToTimer(props.currMaxTime);
+  const currentTimeObj = WithTime(currMaxTime)
+  
   // reading setting from LAYER_CONTROLS and DATA_CONTROLS
   const [settings, setSettings] = useState(
     Object.keys(LAYER_CONTROLS).reduce(
@@ -100,26 +105,64 @@ export function MapLayers (props) {
 
   useEffect(() => {
     if (data.path && data.path.length > 0) {
-      // calculate center point to transite the view
-      const center_point = center(points(
-        data.path.map( (p) => getCoord(p.center_point) )
-      ));
 
-      setViewState(
-        {
-          ...INITIAL_VIEW_STATE,
-          longitude: getCoord(center_point)[0],
-          latitude: getCoord(center_point)[1],
+      // transit the view so that all points fit into the screen 
+      if (settings.viewMapTransition === 1) {
+
+        // use @turf/bbox to get the bounding box of your data (data need to be in geojson format)
+        let bounds = []
+        for (let i = 0; i < data.path.length; i++) {
+          if (data.path[i].path.length > 1) {
+            let box = bbox(lineString(data.path[i].path)); // return [minX, minY, maxX, maxY]; i.e.[-73.916609, 40.814481, -73.843186, 40.841145]
+            bounds.push([box[0], box[1]])
+            bounds.push([box[2], box[3]])
+          } else { // only one position in the path
+            bounds.push(data.path[i].path[0])
+          }
         }
-      )              
+        bounds = bbox(lineString(bounds));
+    
+        // get new zoom to fit the screen
+        const { longitude, latitude, zoom } = new WebMercatorViewport(viewState)
+        .fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]],  // [[longitude, latitude], [longitude, latitude]]
+          {
+            padding: {top:20, bottom: 20, left: 20, right: 20},
+            // offset: [number,number],
+            // minExtent: number,
+            // maxZoom: number // 24
+          });
+    
+        setViewState(
+          {
+            ...INITIAL_VIEW_STATE,
+            longitude,
+            latitude,
+            zoom
+          }
+        )       
+      }
+      // calculate center point to transite the view
+      else if (settings.viewMapTransition === 2) {
+
+        // transit the view so that the map centers on the center point of all data
+        const center_point = center(points(
+          data.path.map( (p) => getCoord(p.center_point) )
+        ));
+  
+        setViewState(
+          {
+            ...INITIAL_VIEW_STATE,
+            longitude: getCoord(center_point)[0],
+            latitude: getCoord(center_point)[1],
+          }
+        )
+      }
     }
+
     return () => {
       // cleanup
     }
-  }, [data.path])
-
-  // time sync and control
-  const currentTimeObj = WithTime(currMaxTime)
+  }, [data.path, settings.viewMapTransition])
 
   // get layers
   let layers = Trips({

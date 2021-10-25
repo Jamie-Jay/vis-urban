@@ -1,5 +1,22 @@
 import { START_TIME, COLOR_PALETTE } from './constants'
 
+const BASE_URL_CAMPUS = 'http://10.92.214.223/';
+const BASE_URL = 'https://api.buswatcher.org/';
+
+export const  getUrl = (selectedTimeStamp, busRoute) => {
+  // combine url
+  const dt = new Date(selectedTimeStamp)
+  return (
+    BASE_URL + 'api/v2/nyc/'
+    + dt.getFullYear() + '/'
+    + ( dt.getMonth() + 1 ) + '/'
+    + dt.getDate() + '/'
+    + dt.getHours() + '/'
+    + busRoute
+    + '/buses/geojson'
+  );
+}
+
 let TimerStart = START_TIME;
 
 export const setTimerStart = (start) => {

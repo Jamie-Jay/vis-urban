@@ -26,6 +26,16 @@ export const LAYER_CONTROLS = {
     min: 0,
     max: 100
   },
+  showPositions: {
+    displayName: 'Show Bus Positions ? ',
+    type: 'radio-list',
+    options: {
+      'Static': 1,
+      'Animated': 2,
+      'None': 0
+    },
+    value: 1
+  },
   // showScatterplot: {
   //   displayName: 'Show Arrow Animation',
   //   type: 'boolean',
@@ -36,16 +46,16 @@ export const LAYER_CONTROLS = {
   //   type: 'boolean',
   //   value: true
   // },
-  showGeoJson: {
-    displayName: 'Show Animated Bus Positions',
-    type: 'boolean',
-    value: true
-  },
-  showIcons: {
-    displayName: 'Show Static Bus Positions',
-    type: 'boolean',
-    value: false
-  },
+  // showGeoJson: {
+  //   displayName: 'Show Animated Bus Positions',
+  //   type: 'boolean',
+  //   value: true
+  // },
+  // showIcons: {
+  //   displayName: 'Show Static Bus Positions',
+  //   type: 'boolean',
+  //   value: false
+  // },
   IconsSpeedThreshold: {
     displayName: 'Warning Icon for Speed <= mph',
     type: 'range',
@@ -96,4 +106,13 @@ export const LAYER_CONTROLS = {
   //   min: 80,
   //   max: 100
   // }
+  viewMapTransition: {
+    displayName: 'Adjust Map View',
+    type: 'radio-list',
+    options: {
+      'Fit in the screen': 1,
+      'Focus on the position center': 2
+    },
+    value: 1
+  }
 };
