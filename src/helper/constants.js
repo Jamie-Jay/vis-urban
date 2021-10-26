@@ -145,7 +145,7 @@ export const MAPBOX_DEFAULT_MAPSTYLES = [
 
 const ICON_MAPPING = {
   marker: {x: 0, y: 0, width: 128, height: 128, mask: true},
-  markerSlow: {x: 128, y: 0, width: 128, height: 128, mask: false},
+  markerSlow: {x: 128, y: 0, width: 128, height: 128, mask: true},
 };
 
 export const iconMapping = ICON_MAPPING;

@@ -4,12 +4,7 @@ import {
   length, 
   distance, 
   lineString, 
-  // lineSlice, 
-  // buffer, 
-  // combine,
-  // getGeom,
-  // getCoord,
-  // point
+  // lineSlice
  } from '@turf/turf'
 // import { BX4_BUS_ROUTE0 } from './BX4_0'
 
@@ -59,11 +54,9 @@ import {
       console.log('Max:', Math.max(...timestamps));
 */
 
-let pathByVehicleId = {}
-
 export function getPathFromJson (rawData) {
 
-  pathByVehicleId = rawData.reduce(
+  const pathByVehicleId = rawData.reduce(
     (accu, curr) => {
 
       // process timestamp
@@ -94,7 +87,6 @@ export function getPathFromJson (rawData) {
         } else if (currTimestamp !== accu[index].timestamps.slice(-1)[0]) {
           // if equal, deem replicate records, skip the current record
           // console.log(curr.properties.vehicle_id, currTimestamp, ' replica - deleted')
-          
         } else {
           // smaller than the last record, search the right index backward
           for (let i = accu[index].length -  1; i >= 0; i++) {
@@ -119,7 +111,7 @@ export function getPathFromJson (rawData) {
 
   // calculate individual and average speed for each path
   // and center point
-  calcSpeedAndCenter (rawData);
+  calcAggregatedData (pathByVehicleId);
 
   return pathByVehicleId
 }
@@ -132,20 +124,15 @@ function calcDistanceDirect(start, stop) {
 }
 
 // TO EXPAND ON ALL THE BUS ROUTES
-function calcDistanceProjectOnLine(start, stop) {
+// function calcDistanceProjectAlongLine(start, stop) {
   // could have two points projecting to the same spots
   // var sliced = lineSlice(start, stop, BX4_BUS_ROUTE0.features[0]);
   // let dist = length(sliced, {units: 'miles'});
   // // console.log(sliced, dist)
   // return dist
-  return 0
-}
+// }
 
-function calcSpeedAndCenter (rawData) {
-
-  if (pathByVehicleId === {}) {
-    getPathFromJson (rawData)
-  }
+function calcAggregatedData (pathByVehicleId) {
 
   for (let index = 0; index < pathByVehicleId.length; index++) {
     const positions = pathByVehicleId[index].path;
@@ -167,7 +154,7 @@ function calcSpeedAndCenter (rawData) {
       let distance = calcDistanceDirect(positions[pos - 1], positions[pos])
       // or
       // points project on the bus routes
-      // let distance = calcDistanceProjectOnLine(positions[pos - 1], positions[pos])
+      // let distance = calcDistanceProjectAlongLine(positions[pos - 1], positions[pos])
 
       // time diff
       let timeDiff = pathByVehicleId[index].timestamps[pos] - pathByVehicleId[index].timestamps[pos - 1]
@@ -198,17 +185,17 @@ function calcSpeedAndCenter (rawData) {
  *      route: '',
  *      timestamp: ,
  *      bearing: number, 
- *      speedmph: number
+ *      speedmph: number,
+ *      // for heatmap
+        heatRadiusThreshold: ,
+        heatTimeWindow: ,
+        withinThreshold: [],
+        withinThresholdVehicles: Set,
  *     }, 
  *      ...
  * ]
  */
-// 
-// 0:
-// bearing: 57.380756
-// position: (2) [-73.898728, 40.859144]
-// speedmph: 5.096842057404869
-// vehicle_id: "MTA NYCT_5343"
+
 export function getPointsFromJson (rawData) {
 
   return rawData.reduce(
@@ -240,12 +227,8 @@ export function getPointsFromJson (rawData) {
   );
 }
 
-export function getPointsFromPath (rawData) {
+export function getPointsFromPath (pathByVehicleId) {
 
-  if (pathByVehicleId === {}) {
-    getPathFromJson (rawData)
-  }
-  // console.log(pathByVehicleId)
   return pathByVehicleId.reduce(
     (accu, curr) => {
       for (let index = 0; index < curr.path.length; index++) {
@@ -263,6 +246,47 @@ export function getPointsFromPath (rawData) {
     },
     []
   );
+}
+
+function calcBunchingPoints(positions, timestamps, center, anchorTime, threshold, timeWindow = 120) {
+  // need to align the data first - heatmap animation
+
+  // check points on any path in timeWindow
+  const timeRangeLowerBound = anchorTime - timeWindow * 1000;
+  const timeRangeUpperBound = anchorTime + timeWindow * 1000;
+  // find position index range by time window
+  let lowerIndex = timestamps.findIndex( (t) => t > timeRangeLowerBound ); // included
+  let UpperIndex = timestamps.findIndex( (t) => t > timeRangeUpperBound ); // not included
+  if (lowerIndex === -1) { // all timestamps are smaller than lower bound
+  }
+  else if (UpperIndex === -1) { // all timestamps are smaller than upper bound -> [lowerIndex, end]
+    UpperIndex = timestamps.length
+  }
+  const bunchingPoints = positions.slice(lowerIndex, UpperIndex).filter( (curr) => distance(center, curr, {units: 'miles'}) <= threshold )
+
+  return bunchingPoints
+}
+
+// calculate Bunching Points use direct distances - if more exact, should be the distance along the bus routes, i.e M15
+export function calculateBunchingPoints(points, paths, threshold, timeWindow) {
+  // calculate the nearest neighborhood count and mark them
+  for (let index = 0; index < points.length; index++) {
+    // update points
+    points[index].heatRadiusThreshold = threshold;
+    points[index].heatTimeWindow = timeWindow;
+    points[index].withinThreshold = [];
+    points[index].withinThresholdVehicles = new Set();
+    // calculate nearest points indeics in certain miles for all paths
+    for (let i = 0; i < paths.length; i++) {
+      const bunchingPoints = calcBunchingPoints(paths[i].path, paths[i].timestamps, points[index].position, points[index].timestamp, threshold, timeWindow)
+      if (bunchingPoints.length === 0) {
+        // console.log(paths[i].vehicle_id, 'did not passby ', points[index].vehicle_id)
+      } else {
+        points[index].withinThreshold = points[index].withinThreshold.concat(bunchingPoints)
+        points[index].withinThresholdVehicles.add(paths[i].vehicle_id)
+      }
+    }
+  }
 }
 
 /**
@@ -285,11 +309,7 @@ export function getPointsFromPath (rawData) {
   ...
 ]
  */
-export function getGeoJsonFromPath (rawData) {
-
-  if (pathByVehicleId === {}) {
-    getPathFromJson (rawData)
-  }
+export function getGeoJsonFromPath (pathByVehicleId) {
 
   return pathByVehicleId.reduce(
     (accu, curr) => {

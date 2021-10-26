@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { IconLayer } from '@deck.gl/layers';
 import { easeBackInOut } from 'd3';
 
@@ -8,6 +9,8 @@ export const Icons = (props) => {
 
   const { data, settings, onHover } = props;
 
+  const [withinHovered, setWithinHovered] = useState([])
+
   return [
       new IconLayer({
         id: 'icon',
@@ -15,7 +18,14 @@ export const Icons = (props) => {
         visible: settings.showPositions === 1,
         pickable: true,
         // opacity,
-        onHover,
+        onHover: (hover) => {
+          onHover(hover);
+          if (hover.index !== -1) {
+            setWithinHovered(hover.object.withinThreshold)
+          } else {
+            setWithinHovered([])
+          }
+        },
         autoHighlight: true,
         highlightColor: [255, 255, 255],
 
@@ -34,7 +44,14 @@ export const Icons = (props) => {
         getIcon: d => (d.speedmph <= settings.IconsSpeedThreshold) ? 'markerSlow' : 'marker', // getIcon 
         getPosition: d => d.position,
         getSize: d => settings.IconSizeInverseSpeed ? inverseSpeed(d.speedmph) : Math.min(d.speedmph, 50.0), // do not inverse when speed = 0 // getIconSize 
-        getColor: d => colorSchema(d.vehicle_id), //[255 / d.speedmph, 140, 0], // getIconColor 
+        getColor: d => {
+          // set the points within distance a different color
+          if(withinHovered.indexOf(d.position) !== -1) {
+            return [255, 255, 255, 200] // highlight the nearby points of the hovered
+          } else {
+            return (d.speedmph <= settings.IconsSpeedThreshold) ? [255, 0, 0, 200] : colorSchema(d.vehicle_id, 200)
+          }
+        }, //[255 / d.speedmph, 140, 0], // getIconColor 
         getAngle: d => d.bearing + 90, // getIconAngle 
         // getPixelOffset  // getIconPixelOffset, Screen space offset relative to the coordinates in pixel unit.
         
@@ -42,7 +59,8 @@ export const Icons = (props) => {
 
         updateTriggers: {
           getIcon: [settings.IconsSpeedThreshold],
-          getSize: [settings.IconSizeInverseSpeed]
+          getSize: [settings.IconSizeInverseSpeed],
+          getColor: [withinHovered]
         },
         transitions: {
           getSize:  {

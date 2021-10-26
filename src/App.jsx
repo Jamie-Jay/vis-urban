@@ -1,6 +1,6 @@
 import React from 'react';
 import { MapLayers } from './MapLayers'
-import { getPathFromJson, getPointsFromPath, getGeoJsonFromPath } from './helper/formatData'
+import { getPathFromJson, getPointsFromPath, getGeoJsonFromPath, calculateBunchingPoints } from './helper/formatData'
 import { layerControl } from './helper/style';
 import { MapStylePicker } from './helper/controllers';
 import { START_TIME, COMMON_BUS_ROUTES } from './helper/constants';
@@ -46,7 +46,7 @@ export default class App extends React.Component{
 
       // not empty data points
       if (data['features'] && data['features'].length > 0) {
-        const {json, path, points} = this._processData(data['features']);
+        const {json, paths, points} = this._processData(data['features']);
 
         const dataKey = this.getDataKey(selectedTimeStamp, busRoute);
         this.setState((previousState) => {
@@ -56,7 +56,7 @@ export default class App extends React.Component{
               [dataKey] : {
                 show: true,             // if show on the map
                 json: json,             // geojson layer format
-                path: path,             // trip format data
+                paths: paths,             // trip format data
                 points: points          // scatterplot/hexagons/icon format data
               }
             }
@@ -82,17 +82,18 @@ export default class App extends React.Component{
 
   _processData = (rawData) => {
 
-    const path = getPathFromJson(rawData)
-    const points = getPointsFromPath(rawData)
-    const json = getGeoJsonFromPath(rawData)
+    const paths = getPathFromJson(rawData)
+    const points = getPointsFromPath(paths)
+    const json = getGeoJsonFromPath(paths)
+    calculateBunchingPoints(points, paths, 0.5, 120)
 
-    return { json, path, points }
+    return { json, paths, points }
   };
 
   setDataToShow() {
     // recombine dataToShow
     let jsonList = []
-    let pathList = []
+    let pathsList = []
     let pointsList = []
     let dataShowedLabel = []
     let times = [] // to update max and min timestamps
@@ -103,13 +104,13 @@ export default class App extends React.Component{
       if (dataJsonCollection[key].show === true) {
 
         jsonList.push(...dataJsonCollection[key].json);
-        pathList.push(...dataJsonCollection[key].path);
+        pathsList.push(...dataJsonCollection[key].paths);
         pointsList.push(...dataJsonCollection[key].points);
 
         // collect each path's min and max timestamps
-        for (let i = 0; i < dataJsonCollection[key].path.length; i++) {
-          times.push(dataJsonCollection[key].path[i].timestamps[0])
-          times.push(dataJsonCollection[key].path[i].timestamps.slice(-1)[0])
+        for (let i = 0; i < dataJsonCollection[key].paths.length; i++) {
+          times.push(dataJsonCollection[key].paths[i].timestamps[0])
+          times.push(dataJsonCollection[key].paths[i].timestamps.slice(-1)[0])
         }
         dataShowedLabel.push(key) 
       }
@@ -119,7 +120,7 @@ export default class App extends React.Component{
       // dataToShow: dataList
       dataToShow: {
         json: jsonList,
-        path: pathList,
+        paths: pathsList,
         points: pointsList
       },
       currMinTime: Math.min(...times),

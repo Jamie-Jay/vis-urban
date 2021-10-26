@@ -170,7 +170,7 @@ const RadioList = ({ settingName, value, propCtrl = {}, onChange }) => {
 };
 
 const Slider = ({ settingName, value, propCtrl, onChange }) => {
-  const { max = 100 } = propCtrl;
+  const { step = 1, max = 100 } = propCtrl;
 
   return (
     <div className="input-group" key={settingName}>
@@ -179,7 +179,7 @@ const Slider = ({ settingName, value, propCtrl, onChange }) => {
           id={settingName}
           min={0}
           max={max}
-          step={max / 100}
+          step={step}
           value={value}
           onChange={e => onChange(settingName, Number(e.target.value))}
         />

@@ -60,9 +60,17 @@ export function MapLayers (props) {
   )
 
   function _onHover({ x, y, object, index }) {
+
+    let withinThresholdVehicles = ''
+    if (object && !object.path && object.vehicle_id) {
+      object.withinThresholdVehicles.forEach(
+        (curr) => withinThresholdVehicles += curr + ', '
+      )
+    }
+
     const label = object ? 
-    object.points ? // hexgon points format
-      [`${object.points.length} points here`] :
+    object.points ? 
+      [`${object.points.length} points here`] : // hexgon points format
       (
         object.properties ? 
           [
@@ -76,7 +84,7 @@ export function MapLayers (props) {
             // `trip id: ${object.properties.trip_id}`,
             `speed: ${object.properties.speedmph.toFixed(2)} mph`,
             `time: ${new Date(object.properties.timestamp).toString()}`
-          ] // geojson format
+          ] // geojson format (data.json)
           : 
           object.path ? 
             [
@@ -84,7 +92,7 @@ export function MapLayers (props) {
               `index: ${index + 1}`,
               `route: ${object.route}`,
               `average speed: ${object.speedmph_avg.toFixed(2)} mph`
-            ] // trip layer format
+            ] // trip layer format (data.path)
             : 
             [
               `${object.vehicle_id}`,
@@ -92,8 +100,11 @@ export function MapLayers (props) {
               `route: ${object.route}`,
               `bearing: ${object.bearing.toFixed(2)}`,
               `speed: ${object.speedmph.toFixed(2)} mph`,
-              `time: ${new Date(object.timestamp).toString()}`
-            ] // scatterplot format
+              `time: ${new Date(object.timestamp).toString()}`,
+              `nearby: ${object.withinThresholdVehicles.size} vehicles (${withinThresholdVehicles}) passing by 
+                          (${object.withinThreshold.length - 1} nearby bus positions recorded) 
+                          in ${object.heatRadiusThreshold} miles within ${object.heatTimeWindow} seconds`
+            ] // scatterplot format (data.points)
       )
     : null;
 
@@ -104,20 +115,20 @@ export function MapLayers (props) {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
 
   useEffect(() => {
-    if (data.path && data.path.length > 0) {
+    if (data.paths && data.paths.length > 0) {
 
       // transit the view so that all points fit into the screen 
       if (settings.viewMapTransition === 1) {
 
         // use @turf/bbox to get the bounding box of your data (data need to be in geojson format)
         let bounds = []
-        for (let i = 0; i < data.path.length; i++) {
-          if (data.path[i].path.length > 1) {
-            let box = bbox(lineString(data.path[i].path)); // return [minX, minY, maxX, maxY]; i.e.[-73.916609, 40.814481, -73.843186, 40.841145]
+        for (let i = 0; i < data.paths.length; i++) {
+          if (data.paths[i].path.length > 1) {
+            let box = bbox(lineString(data.paths[i].path)); // return [minX, minY, maxX, maxY]; i.e.[-73.916609, 40.814481, -73.843186, 40.841145]
             bounds.push([box[0], box[1]])
             bounds.push([box[2], box[3]])
           } else { // only one position in the path
-            bounds.push(data.path[i].path[0])
+            bounds.push(data.paths[i].path[0])
           }
         }
         bounds = bbox(lineString(bounds));
@@ -146,7 +157,7 @@ export function MapLayers (props) {
 
         // transit the view so that the map centers on the center point of all data
         const center_point = center(points(
-          data.path.map( (p) => getCoord(p.center_point) )
+          data.paths.map( (p) => getCoord(p.center_point) )
         ));
   
         setViewState(
@@ -157,16 +168,17 @@ export function MapLayers (props) {
           }
         )
       }
+      // TODO: focus on a certain bus route
     }
 
     return () => {
       // cleanup
     }
-  }, [data.path, settings.viewMapTransition])
+  }, [data.paths, settings.viewMapTransition])
 
   // get layers
-  let layers = Trips({
-    data: data.path,
+  const layers = Trips({
+    data: data.paths,
     currentTime: currentTimeObj.getCurrentTime(),
     settings: settings,
     onHover: hover => _onHover(hover) // 'hover' corresponds to one of the data entries that is passed in via prop.data
