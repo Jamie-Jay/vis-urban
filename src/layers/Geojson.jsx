@@ -7,10 +7,6 @@ export function GeoJson(props) {
 
   const { data, currentTime, onHover, settings } = props;
 
-  /**
-   * Data format:
-   * Valid GeoJSON object
-   */
   function getSizeBySpeed(d) {
     return settings.IconSizeInverseSpeed ? inverseSpeed(d.speedmph) : Math.min(d.speedmph, 50.0)
   }
@@ -18,6 +14,11 @@ export function GeoJson(props) {
   function getVehicleColorBySpeed(d) {
     return d.speedmph > settings.IconsSpeedThreshold ? colorSchema(d.vehicle_id, 200) : [255, 0, 0, 200] // a is 255 if not supplied.
   }
+
+  /**
+   * Data format:
+   * Valid GeoJSON object
+   */
 
   const layer = 
     new GeoJsonLayer({
@@ -107,6 +108,7 @@ export function GeoJson(props) {
 
       updateTriggers: {
         getFillColor: [settings.IconsSpeedThreshold],
+        getLineColor: [settings.IconsSpeedThreshold],
         getTextColor: [settings.IconsSpeedThreshold],
         getPointRadius: [settings.IconSizeInverseSpeed],
         getTextSize: [settings.IconSizeInverseSpeed]
@@ -114,8 +116,8 @@ export function GeoJson(props) {
 
       // props added by DataFilterExtension
       getFilterValue: d => convertTimeToTimer(d.properties.timestamp),
-      filterRange: [currentTime - 100, currentTime + 100],
-      filterSoftRange: [currentTime - 50, currentTime + 50],
+      filterRange: [currentTime - 60, currentTime + 60],
+      filterSoftRange: [currentTime - 30, currentTime + 30],
       filterTransformSize: true,
       filterTransformColor: true,
 

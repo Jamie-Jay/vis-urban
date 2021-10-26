@@ -21,6 +21,7 @@ import {
 } from './helper/controllers';
 import { LAYER_CONTROLS, DATA_CONTROLS } from './helper/settings'
 import { convertTimeToTimer, setTimerStart } from './helper/helperFuns';
+import { calculateBunchingPoints } from './helper/formatData'
 
 // Trips can only be called in a function, it uses hooks
 export function MapLayers (props) {
@@ -49,6 +50,15 @@ export function MapLayers (props) {
       )
     )
   );
+
+  useEffect(() => {
+    // update the nearest points
+    calculateBunchingPoints(data.points, data.paths, settings.HightlightRedius, settings.HightlightTimeWindow)
+
+    return () => {
+      // cleanup
+    }
+  }, [settings.HightlightRedius, settings.HightlightTimeWindow])
 
   // hover content
   const [hover, setHover] = useState(
@@ -111,7 +121,6 @@ export function MapLayers (props) {
     setHover({ x, y, hoveredObject: object, label });
   }
 
-  // fly to centering on the new bus routes
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
 
   useEffect(() => {
@@ -230,7 +239,7 @@ export function MapLayers (props) {
         {hover.label.map(content => (<div key={content}>{content}</div>))}
         </div>
       )}
-      <div className="layer-controls" style ={layerControl}>
+      <div className="layer-controls" style ={{...layerControl, overflow: 'auto', height:'500px'}}>
         <DataSourceControls
           settings={settings}
           propCtrls={DATA_CONTROLS}

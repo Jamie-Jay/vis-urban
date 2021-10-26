@@ -6,7 +6,7 @@ import {
   lineString, 
   // lineSlice
  } from '@turf/turf'
-// import { BX4_BUS_ROUTE0 } from './BX4_0'
+import BX4_BUS_ROUTE0 from './data/BX4_0.json' // import json object directly from json file
 
 // rawData: from api json
 /** turn to 
@@ -269,6 +269,11 @@ function calcBunchingPoints(positions, timestamps, center, anchorTime, threshold
 
 // calculate Bunching Points use direct distances - if more exact, should be the distance along the bus routes, i.e M15
 export function calculateBunchingPoints(points, paths, threshold, timeWindow) {
+
+  if (!points || !paths) {
+    return
+  }
+
   // calculate the nearest neighborhood count and mark them
   for (let index = 0; index < points.length; index++) {
     // update points

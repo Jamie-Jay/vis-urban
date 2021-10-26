@@ -60,7 +60,7 @@ export const Icons = (props) => {
         updateTriggers: {
           getIcon: [settings.IconsSpeedThreshold],
           getSize: [settings.IconSizeInverseSpeed],
-          getColor: [withinHovered]
+          getColor: [settings.IconsSpeedThreshold, withinHovered]
         },
         transitions: {
           getSize:  {

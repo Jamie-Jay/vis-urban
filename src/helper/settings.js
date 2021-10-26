@@ -20,7 +20,7 @@ export const LAYER_CONTROLS = {
     value: true
   },
   TripTraceWidth: {
-    displayName: 'Trip Trace Width = avarage speed * ',
+    displayName: 'Trip Trace Width = avg speed * ',
     type: 'range',
     value: 10,
     min: 0,
@@ -35,6 +35,22 @@ export const LAYER_CONTROLS = {
       'None': 0
     },
     value: 1
+  },
+  HightlightRedius: {
+    displayName: '(Static) Radius(miles) for Highlighting Positions when Hovering',
+    type: 'range',
+    value: 0.5,
+    step: 0.1,
+    min: 0,
+    max: 1
+  },
+  HightlightTimeWindow: {
+    displayName: '(Static) Time Window(seconds) for Highlighting Positions when Hovering',
+    type: 'range',
+    value: 120,
+    step: 10,
+    min: 0,
+    max: 1200
   },
   // showScatterplot: {
   //   displayName: 'Show Arrow Animation',
@@ -57,9 +73,10 @@ export const LAYER_CONTROLS = {
   //   value: false
   // },
   IconsSpeedThreshold: {
-    displayName: 'Warning Icon for Speed <= mph',
+    displayName: 'Red Icon for Speed <= mph',
     type: 'range',
     value: 2,
+    step: 0.1,
     min: 0,
     max: 10
   },
@@ -74,6 +91,7 @@ export const LAYER_CONTROLS = {
     displayName: 'Icon Size Scale',
     type: 'range',
     value: 5,
+    step: 0.1,
     min: 0,
     max: 20
   },
