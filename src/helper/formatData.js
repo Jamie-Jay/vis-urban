@@ -6,7 +6,7 @@ import {
   lineString, 
   // lineSlice
  } from '@turf/turf'
-import BX4_BUS_ROUTE0 from './data/BX4_0.json' // import json object directly from json file
+// import BX4_BUS_ROUTE0 from './data/BX4_0.json' // import json object directly from json file
 
 // rawData: from api json
 /** turn to 
