@@ -3,11 +3,12 @@ import { START_TIME, COLOR_PALETTE } from './constants'
 const BASE_URL_CAMPUS = 'http://10.92.214.223/';
 const BASE_URL = 'https://api.buswatcher.org/';
 
-export const  getUrl = (selectedTimeStamp, busRoute) => {
+export const  getUrl = (selectedTimeStamp, busRoute, dataUrl) => {
   // combine url
   const dt = new Date(selectedTimeStamp)
+
   return (
-    BASE_URL + 'api/v2/nyc/'
+    (dataUrl === 2 ? BASE_URL_CAMPUS : BASE_URL) + 'api/v2/nyc/'
     + dt.getFullYear() + '/'
     + ( dt.getMonth() + 1 ) + '/'
     + dt.getDate() + '/'
@@ -28,7 +29,7 @@ export const convertTimeToTimer = (timestamp) => {
 }
 
 export const inverseSpeed = (speedmph) => {
-  return speedmph === 0 ? 0 : (100 / speedmph > 50 ? 50 : 100 / speedmph) // do not inverse when speed = 0 and speed no faster than 50
+  return speedmph === 0 ? 50.0 : (100 / speedmph > 50 ? 50 : 100 / speedmph) // do not inverse when speed = 0 and speed no faster than 50
 }
 
 export const colorSchema = (vehicle_id, alpha = null) => {

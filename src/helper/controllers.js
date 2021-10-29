@@ -26,6 +26,7 @@ export function MapStylePicker({ currentStyle, onStyleChange }) {
 export class DataSourceControls extends Component {
 
   state = {
+    dataUrl: this.props.settings.dataUrl,
     dataTime: this.props.settings.dataTime,
     busRoutes: this.props.settings.busRoutes
   }
@@ -44,28 +45,35 @@ export class DataSourceControls extends Component {
   }
 
   render() {
-    const { title, settings, propCtrls = {} } = this.props;
+    const { settings, propCtrls = {} } = this.props;
 
     return (
       <div>
-        {title && <h4>{title}</h4>}
-        {Object.keys(propCtrls).map(key => (
-          <div key={key}>
-            <label>{propCtrls[key].displayName}</label>
-            <div style={{ display: 'inline-block', float: 'right' }}>
-              {Array.isArray(settings[key]) ? settings[key].join(', ') : settings[key]}
+        <span><b>Data Source Controller</b></span>
+        <div style={{
+            border: "thin solid gray",
+            borderRadius: '10px',
+        }}>
+          {Object.keys(propCtrls).map(key => (
+            <div key={key}>
+              <label>{propCtrls[key].displayName}</label>
+              <div style={{ display: 'inline-block', float: 'right' }}>
+                {Array.isArray(settings[key]) ? settings[key].join(', ') : settings[key]}
+              </div>
+              <Setting
+                settingName={key}
+                value={this.state[key]}
+                propCtrl={propCtrls[key]}
+                onChange={this._onValueChange}
+                />
             </div>
-            <Setting
-              settingName={key}
-              value={this.state[key]}
-              propCtrl={propCtrls[key]}
-              onChange={this._onValueChange}
-            />
+          ))}
+          <div style={{ height: '25px', textAlign:'right'}}>
+          <button style={{ display: 'block', float: 'right', borderRadius: '5px' }} 
+                  onClick={this.handleClick}
+                  >Data OK</button>
           </div>
-        ))}
-        <button style={{ display: 'inline-block', float: 'right' }} 
-                onClick={this.handleClick}
-                >Data OK</button>
+        </div>
       </div>
     )
   }
@@ -82,25 +90,54 @@ export class LayerControls extends Component {
   }
 
   render() {
-    const { title, settings, propCtrls = {} } = this.props;
+    const { settings, propCtrls = {} } = this.props;
 
     return (
       <div>
-        {title && <h4>{title}</h4>}
-        {Object.keys(propCtrls).map(key => (
-          <div key={key}>
-            <label>{propCtrls[key].displayName}</label>
-            <div style={{ display: 'inline-block', float: 'right' }}>
-              {settings[key]}
-            </div>
-            <Setting
-              settingName={key}
-              value={settings[key]}
-              propCtrl={propCtrls[key]}
-              onChange={this._onValueChange}
-            />
-          </div>
-        ))}
+        <span><b>Map Displaying Controller</b></span>
+        <div style={{
+            border: "thin solid gray",
+            borderRadius: '10px'
+        }}>
+          {Object.keys(propCtrls).map(key => {
+
+            let show = 'block'
+
+            if (propCtrls[key]['displayCondition']) {
+              let orCond = false;
+              const conditions = propCtrls[key]['displayCondition']
+              for (let i = 0; i < conditions.length; i++) { // or condition
+                let andCond = true
+                for (let condition in conditions[i]) { // and condition
+                  if (conditions[i][condition] !== settings[condition]) {
+                    andCond = false
+                    break
+                  }
+                }
+                if (andCond) {
+                  orCond = true
+                  break
+                }
+              }
+              show = orCond ? 'block' : 'none'
+            }
+
+            return (
+              <div key={key} style={{display: show}}>
+                <label>{propCtrls[key].displayName}</label>
+                <div style={{ display: 'inline-block', float: 'right' }}>
+                  {settings[key]}
+                </div>
+                <Setting
+                  settingName={key}
+                  value={settings[key]}
+                  propCtrl={propCtrls[key]}
+                  onChange={this._onValueChange}
+                />
+              </div>
+            )}
+          )}
+        </div>
       </div>
     );
   }

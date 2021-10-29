@@ -14,6 +14,7 @@ export default class App extends React.Component{
     style: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
     selectedTimeStamp: START_TIME,
     busRoutes: [],
+    dataUrl: 1, // BASE_URL
     currMaxTime: 4000,
     currMinTime: 0
   }
@@ -30,7 +31,7 @@ export default class App extends React.Component{
 
   getApiData = async (selectedTimeStamp, busRoute, readLocalFile = false) => {
     // combine url
-    const urlStr = readLocalFile ? './geojson.json' : getUrl(selectedTimeStamp, busRoute)
+    const urlStr = readLocalFile ? './geojson.json' : getUrl(selectedTimeStamp, busRoute, this.state.dataUrl)
     // console.log(urlStr)
 
     await fetch(urlStr, {
@@ -186,7 +187,11 @@ export default class App extends React.Component{
 
   setSelectedDataSource = (newChoice) => {
 
-    const {dataTime, busRoutes} = newChoice;
+    const {dataTime, busRoutes, dataUrl} = newChoice;
+    this.setState({
+      dataUrl
+    })
+
     // console.log('app', dataTime, busRoutes)
     if (this.updateDataCollection(dataTime, busRoutes) === false) {
       this.setDataToShow()

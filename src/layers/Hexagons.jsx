@@ -29,10 +29,12 @@ export const Hexagons = (props) => {
     new HexagonLayer({
       id: 'heatmap',
       data,
-      visible: settings.showHexagon,
+      visible: settings.showPositions == 4,
       opacity: 0.8,
       pickable: true,
       onHover,
+      autoHighlight: true,
+      highlightColor: [255, 255, 255],
 
       colorRange: HEATMAP_COLORS,
       elevationRange,
@@ -42,9 +44,9 @@ export const Hexagons = (props) => {
       lightSettings: LIGHT_SETTINGS,
 
       // fix settings
-      radius: 100, // radius {Number}, Hexagon layer cell radius in meters
-      coverage: 0.5,
-      upperPercentile: 100 // upperPercentile {Number} (Default: 100), Hexagon cells with value larger than upperPercentile will be hidden
+      radius: settings.radius, // radius {Number}, Hexagon layer cell radius in meters
+      coverage: settings.coverage,
+      upperPercentile: settings.upperPercentile // upperPercentile {Number} (Default: 100), Hexagon cells with value larger than upperPercentile will be hidden
     })
   ];
 }

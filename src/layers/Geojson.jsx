@@ -1,7 +1,7 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
 import { convertTimeToTimer, colorSchema, inverseSpeed } from '../helper/helperFuns'
-// import { iconAtlas, iconMapping } from '../helper/constants'
+import { iconAtlas, iconMapping } from '../helper/constants'
 
 export function GeoJson(props) {
 
@@ -24,13 +24,13 @@ export function GeoJson(props) {
     new GeoJsonLayer({
       id: 'geojson-layer',
       data,
-      visible: settings.showPositions === 2,
+      visible: settings.showPositions === 1,
       pickable: true,
       onHover,
       autoHighlight: true,
       highlightColor: [255, 255, 255, 0.8],
 
-      pointType: 'circle+text',// circle or icon or text or  join the names with + (e.g. 'icon+text')
+      pointType: 'icon+text',// circle or icon or text or  join the names with + (e.g. 'icon+text')
 
       // control the solid fill of Polygon and MultiPolygon features(not extruded), and the Point and MultiPoint features if pointType is 'circle'
       filled: true,
@@ -66,17 +66,17 @@ export function GeoJson(props) {
 
       // pointType:icon Options
       // props are forwarded to an IconLayer
-      // iconAtlas, // iconAtlas
-      // iconMapping, // iconMapping
-      // billboard: false,
-      // getIcon: 'markerSlow', //d=> (d.speedmph <= settings.IconsSpeedThreshold) ? 'markerSlow' : 'marker', // getIcon
-      // getIconSize: 20, //d => settings.IconSizeInverseSpeed ? inverseSpeed(d.speedmph) : Math.min(d.speedmph, 50.0), // getSize
-      // getIconColor: d => colorSchema(d.properties.vehicle_id), // getColor
-      // getIconAngle:  d => d.properties.bearing + 90, // getAngle
+      iconAtlas, // iconAtlas
+      iconMapping, // iconMapping
+      billboard: false,
+      getIcon: d=> (d.properties.speedmph <= settings.IconsSpeedThreshold) ? 'markerSlow' : 'marker', // getIcon
+      getIconSize: d => getSizeBySpeed(d.properties), //d => settings.IconSizeInverseSpeed ? inverseSpeed(d.speedmph) : Math.min(d.speedmph, 50.0), // getSize
+      getIconColor: d => getVehicleColorBySpeed(d.properties), //d => colorSchema(d.properties.vehicle_id), // getColor
+      getIconAngle: d => d.properties.bearing + 90, // getAngle
       // getIconPixelOffset // getPixelOffset
-      // iconSizeUnits: 'meters', // sizeUnits
-      // iconSizeScale: settings.IconSizeScale, // sizeScale
-      // iconSizeMinPixels: 6, // sizeMinPixels
+      iconSizeUnits: 'meters', // sizeUnits
+      iconSizeScale: settings.IconSizeScale, // sizeScale
+      iconSizeMinPixels: 6, // sizeMinPixels
       // iconSizeMaxPixels // sizeMaxPixels
 
       // pointType:text Options
@@ -110,8 +110,11 @@ export function GeoJson(props) {
         getFillColor: [settings.IconsSpeedThreshold],
         getLineColor: [settings.IconsSpeedThreshold],
         getTextColor: [settings.IconsSpeedThreshold],
+        getIconColor: [settings.IconsSpeedThreshold],
         getPointRadius: [settings.IconSizeInverseSpeed],
-        getTextSize: [settings.IconSizeInverseSpeed]
+        getTextSize: [settings.IconSizeInverseSpeed],
+        getIconSize: [settings.IconSizeInverseSpeed],
+        getIcon: [settings.IconsSpeedThreshold]
       },
 
       // props added by DataFilterExtension

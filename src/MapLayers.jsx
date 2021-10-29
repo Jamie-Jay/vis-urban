@@ -10,8 +10,8 @@ import { Trips } from './layers/Trips'
 import { Hexagons } from './layers/Hexagons'
 import { GeoJson } from './layers/Geojson'
 import { Icons } from './layers/Icons'
-import { WithTime } from "./helper/Timer";
 
+import { WithTime } from "./helper/Timer";
 import { tooltipStyle, layerControl } from './helper/style'; // Mouseover interaction
 import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, DEFAULT_THEME } from './helper/constants'
 import {
@@ -283,7 +283,7 @@ export function MapLayers (props) {
         />
       </DeckGL>
       {
-        (settings.showGeoJson || settings.showTripTrace) ?
+        (settings.showPositions === 1 || settings.showPositions === 3) ?
           <span style={{...layerControl, top: '0px', right: '300px'}}>
           <div style={{ width: '100%', marginTop: "1rem" }}>
             <b>Trace & Animation Controller</b>
