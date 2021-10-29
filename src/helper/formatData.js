@@ -310,8 +310,12 @@ export function calculateBunchingPoints(points, paths, threshold, timeWindow) {
     points[index].heatTimeWindow = timeWindow;
     points[index].withinThreshold = [];
     points[index].withinThresholdVehicles = new Set();
-    // calculate nearest points indeics in certain miles for all paths
+
+    // calculate nearest points indeics in certain miles for paths of the same route
     for (let i = 0; i < paths.length; i++) {
+      if (points[index].route !== paths[i].route) {
+        continue
+      }
       const bunchingPoints = calcBunchingPoints(
                                 paths[i].path, paths[i].timestamps, paths[i].directions, 
                                 points[index].position, points[index].timestamp, points[index].direction, 

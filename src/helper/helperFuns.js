@@ -28,12 +28,24 @@ export const convertTimeToTimer = (timestamp) => {
   return (timestamp - TimerStart) / 1000
 }
 
+export const isZero = (decimal) => {
+  return parseFloat(decimal) == parseFloat(0)
+}
+
 export const getSpeed = (speedmph) => {
   return Math.min(speedmph, 50.0) // speed no faster than 50
 }
 
 export const getInverseSpeed = (speedmph) => {
   return (speedmph === 0 ||100 / speedmph > 50) ? 50 : 100 / speedmph // inverse speed 0 to max and speed no faster than 50
+}
+
+export const colorZeroSpeed = (alpha = null) => { // yellow
+  return alpha == null ? [255, 255, 0] : [255, 255, 0, alpha] // a is 255 if not supplied. 
+}
+
+export const colorSlowSpeed = (alpha = null) => { // red
+  return alpha == null ? [255, 0, 0] : [255, 0, 0, alpha]
 }
 
 export const colorSchema = (vehicle_id, alpha = null) => {
@@ -43,4 +55,8 @@ export const colorSchema = (vehicle_id, alpha = null) => {
     ...COLOR_PALETTE[vehicleId % COLOR_PALETTE.length],
     alpha
   ]
+}
+
+export const colorHighlighted = (alpha = null) => { // white
+  return alpha == null ? [255, 255, 255] : [255, 255, 255, alpha]
 }

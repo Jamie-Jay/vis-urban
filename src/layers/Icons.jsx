@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { IconLayer } from '@deck.gl/layers';
 import { easeBackInOut } from 'd3';
 
-import { getInverseSpeed, colorSchema, getSpeed } from '../helper/helperFuns'
+import { getInverseSpeed, colorSchema, getSpeed, isZero, colorZeroSpeed, colorSlowSpeed, colorHighlighted } from '../helper/helperFuns'
 import { iconAtlas, iconMapping } from '../helper/constants'
 
 export const Icons = (props) => {
@@ -27,7 +27,7 @@ export const Icons = (props) => {
           }
         },
         autoHighlight: true,
-        highlightColor: [255, 255, 255],
+        highlightColor: colorHighlighted(),
 
         iconAtlas,  // iconAtlas 
         iconMapping,  // iconMapping 
@@ -45,13 +45,28 @@ export const Icons = (props) => {
         getPosition: d => d.position,
         getSize: d => settings.IconSizeInverseSpeed ? getInverseSpeed(d.speedmph) : getSpeed(d.speedmph), // do not inverse when speed = 0 // getIconSize 
         getColor: d => {
+          const orignialColor = (d.speedmph <= settings.IconsSpeedThreshold) ? 
+                                  (isZero(d.speedmph) ? colorZeroSpeed(200) : colorSlowSpeed()) 
+                                  : colorSchema(d.vehicle_id, 200)
           // set the points within distance a different color
-          if(withinHovered.indexOf(d.position) !== -1) {
-            return [255, 255, 255, 200] // highlight the nearby points of the hovered
+          if (withinHovered.length > 0) {
+            if(withinHovered.indexOf(d.position) !== -1) {
+              return settings.showNearByPointsOnlyWhenHovering ?
+                      // true: nearby points show original color, other points disappear, 
+                      orignialColor
+                      // false: nearby points highlighted, other points remain
+                      : isZero(d.speedmph) ? colorZeroSpeed(200) : colorHighlighted(200)
+            } else {
+              return settings.showNearByPointsOnlyWhenHovering ?
+                      // true: nearby points show original color, other points disappear, 
+                      [0, 0, 0, 0]
+                      // false: nearby points highlighted, other points remain
+                      : orignialColor
+            }
           } else {
-            return (d.speedmph <= settings.IconsSpeedThreshold) ? [255, 0, 0, 200] : colorSchema(d.vehicle_id, 200)
+            return orignialColor
           }
-        }, //[255 / d.speedmph, 140, 0], // getIconColor 
+        }, // getIconColor 
         getAngle: d => d.bearing + 90, // getIconAngle 
         // getPixelOffset  // getIconPixelOffset, Screen space offset relative to the coordinates in pixel unit.
         
@@ -60,7 +75,7 @@ export const Icons = (props) => {
         updateTriggers: {
           getIcon: [settings.IconsSpeedThreshold],
           getSize: [settings.IconSizeInverseSpeed],
-          getColor: [settings.IconsSpeedThreshold, withinHovered]
+          getColor: [settings.IconsSpeedThreshold, withinHovered, settings.showNearByPointsOnlyWhenHovering]
         },
         transitions: {
           getSize:  {

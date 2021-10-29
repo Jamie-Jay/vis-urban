@@ -95,6 +95,14 @@ export const LAYER_CONTROLS = {
     min: 0,
     max: 20
   },
+  showNearByPointsOnlyWhenHovering: {
+    displayName: 'Show Nearby Points ONLY when Hovering',
+    displayCondition: [
+      { showPositions: 2 }
+    ],
+    type: 'boolean',
+    value: true // true: nearby points show original color, other points disappear, false: nearby points highlighted, other points remain
+  },
   HightlightRedius: {
     displayName: 'Radius(miles) for Highlighting Positions when Hovering',
     displayCondition: [
@@ -104,7 +112,7 @@ export const LAYER_CONTROLS = {
     value: 0.5,
     step: 0.1,
     min: 0,
-    max: 1
+    max: 2
   },
   HightlightTimeWindow: {
     displayName: 'Time Window(seconds) for Highlighting Positions when Hovering',

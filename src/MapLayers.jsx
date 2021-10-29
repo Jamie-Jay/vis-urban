@@ -52,7 +52,7 @@ export function MapLayers (props) {
   );
 
   useEffect(() => {
-    // update the nearest points
+    // update the nearest points on the same bus route
     calculateBunchingPoints(data.points, data.paths, settings.HightlightRedius, settings.HightlightTimeWindow)
 
     return () => {
@@ -85,7 +85,7 @@ export function MapLayers (props) {
         object.properties ? 
           [
             `${object.properties.vehicle_id}`,
-            `index: ${index + 1}`,
+            // `index: ${index + 1}`,
             // `agency: ${object.properties.agency}`,
             `route: ${object.properties.route}`,
             `bearing: ${object.properties.bearing.toFixed(2)}`,
@@ -99,20 +99,21 @@ export function MapLayers (props) {
           object.path ? 
             [
               `${object.vehicle_id}`,
-              `index: ${index + 1}`,
+              // `index: ${index + 1}`,
               `route: ${object.route}`,
               `average speed: ${object.speedmph_avg.toFixed(2)} mph`
             ] // trip layer format (data.path)
             : 
             [
               `${object.vehicle_id}`,
-              `index: ${index + 1}`,
+              // `index: ${index + 1}`,
               `route: ${object.route}`,
+              `direction: ${object.direction}`,
               `bearing: ${object.bearing.toFixed(2)}`,
               `speed: ${object.speedmph.toFixed(2)} mph`,
               `time: ${new Date(object.timestamp).toString()}`,
               `nearby: ${object.withinThresholdVehicles.size} vehicles (${withinThresholdVehicles}) passing by 
-                          (${object.withinThreshold.length} nearby bus positions with the same direction recorded) 
+                          (${object.withinThreshold.length} nearby bus positions with the same direction on the same route recorded) 
                           in ${object.heatRadiusThreshold} miles within ${object.heatTimeWindow} seconds`
             ] // scatterplot format (data.points)
       )

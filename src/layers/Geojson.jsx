@@ -1,6 +1,6 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
-import { convertTimeToTimer, colorSchema, getInverseSpeed, getSpeed } from '../helper/helperFuns'
+import { convertTimeToTimer, colorSchema, getInverseSpeed, getSpeed, isZero,colorZeroSpeed, colorSlowSpeed, colorHighlighted } from '../helper/helperFuns'
 import { iconAtlas, iconMapping } from '../helper/constants'
 
 export function GeoJson(props) {
@@ -12,7 +12,8 @@ export function GeoJson(props) {
   }
 
   function getVehicleColorBySpeed(d) {
-    return d.speedmph > settings.IconsSpeedThreshold ? colorSchema(d.vehicle_id, 200) : [255, 0, 0, 200] // a is 255 if not supplied.
+    return d.speedmph > settings.IconsSpeedThreshold ? colorSchema(d.vehicle_id, 200) 
+              : (isZero(d.speedmph) ? colorZeroSpeed(200) : colorSlowSpeed(200)) // yellow for spd=0, red for spd<threshold
   }
 
   /**
@@ -28,7 +29,7 @@ export function GeoJson(props) {
       pickable: true,
       onHover,
       autoHighlight: true,
-      highlightColor: [255, 255, 255, 0.8],
+      highlightColor: colorHighlighted(0.8),
 
       pointType: 'icon+text',// circle or icon or text or  join the names with + (e.g. 'icon+text')
 
@@ -81,7 +82,7 @@ export function GeoJson(props) {
 
       // pointType:text Options
       // props are forwarded to a TextLayer
-      getText: d => '     ' + d.properties.speedmph.toFixed(2).toString() + ' mph',
+      getText: d => '1',//'     ' + d.properties.speedmph.toFixed(2).toString() + ' mph',
       getTextColor: d => getVehicleColorBySpeed(d.properties),
       // getTextAngle
       getTextSize: d => getSizeBySpeed(d.properties),

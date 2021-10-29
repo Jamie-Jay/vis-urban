@@ -1,6 +1,6 @@
 import { TripsLayer } from '@deck.gl/geo-layers';
 // import {PolygonLayer} from '@deck.gl/layers';
-import { convertTimeToTimer, colorSchema } from '../helper/helperFuns'
+import { convertTimeToTimer, colorSchema, colorHighlighted } from '../helper/helperFuns'
 
 export const Trips = (props) => {
 
@@ -24,7 +24,7 @@ export const Trips = (props) => {
       pickable: true,
       onHover,
       autoHighlight: true,
-      highlightColor: [255, 255, 255],
+      highlightColor: colorHighlighted(),
 
       getPath: d => d.path,
       getTimestamps: d => d.timestamps.map((timestamp) => convertTimeToTimer(timestamp)),
