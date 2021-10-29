@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { IconLayer } from '@deck.gl/layers';
 import { easeBackInOut } from 'd3';
 
-import { inverseSpeed, colorSchema } from '../helper/helperFuns'
+import { getInverseSpeed, colorSchema, getSpeed } from '../helper/helperFuns'
 import { iconAtlas, iconMapping } from '../helper/constants'
 
 export const Icons = (props) => {
@@ -43,7 +43,7 @@ export const Icons = (props) => {
         
         getIcon: d => (d.speedmph <= settings.IconsSpeedThreshold) ? 'markerSlow' : 'marker', // getIcon 
         getPosition: d => d.position,
-        getSize: d => settings.IconSizeInverseSpeed ? inverseSpeed(d.speedmph) : Math.min(d.speedmph, 50.0), // do not inverse when speed = 0 // getIconSize 
+        getSize: d => settings.IconSizeInverseSpeed ? getInverseSpeed(d.speedmph) : getSpeed(d.speedmph), // do not inverse when speed = 0 // getIconSize 
         getColor: d => {
           // set the points within distance a different color
           if(withinHovered.indexOf(d.position) !== -1) {

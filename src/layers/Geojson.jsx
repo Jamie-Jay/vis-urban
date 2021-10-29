@@ -1,6 +1,6 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
-import { convertTimeToTimer, colorSchema, inverseSpeed } from '../helper/helperFuns'
+import { convertTimeToTimer, colorSchema, getInverseSpeed, getSpeed } from '../helper/helperFuns'
 import { iconAtlas, iconMapping } from '../helper/constants'
 
 export function GeoJson(props) {
@@ -8,7 +8,7 @@ export function GeoJson(props) {
   const { data, currentTime, onHover, settings } = props;
 
   function getSizeBySpeed(d) {
-    return settings.IconSizeInverseSpeed ? inverseSpeed(d.speedmph) : Math.min(d.speedmph, 50.0)
+    return settings.IconSizeInverseSpeed ? getInverseSpeed(d.speedmph) : getSpeed(d.speedmph)
   }
 
   function getVehicleColorBySpeed(d) {

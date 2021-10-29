@@ -29,7 +29,7 @@ export const Hexagons = (props) => {
     new HexagonLayer({
       id: 'heatmap',
       data,
-      visible: settings.showPositions == 4,
+      visible: settings.showPositions === 4,
       opacity: 0.8,
       pickable: true,
       onHover,

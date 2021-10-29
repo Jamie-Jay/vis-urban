@@ -112,7 +112,7 @@ export function MapLayers (props) {
               `speed: ${object.speedmph.toFixed(2)} mph`,
               `time: ${new Date(object.timestamp).toString()}`,
               `nearby: ${object.withinThresholdVehicles.size} vehicles (${withinThresholdVehicles}) passing by 
-                          (${object.withinThreshold.length - 1} nearby bus positions recorded) 
+                          (${object.withinThreshold.length} nearby bus positions with the same direction recorded) 
                           in ${object.heatRadiusThreshold} miles within ${object.heatTimeWindow} seconds`
             ] // scatterplot format (data.points)
       )

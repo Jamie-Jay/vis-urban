@@ -39,6 +39,12 @@ import {
           ,
           ,
           ...
+        ],
+        directions:[
+          ,
+          ,
+          ,
+          ...
         ]
       },
       ...
@@ -73,7 +79,8 @@ export function getPathFromJson (rawData) {
           route: curr.properties.route,
           path: [curr.geometry.coordinates],
           timestamps: [currTimestamp],
-          bearings: [curr.properties.bearing]
+          bearings: [curr.properties.bearing],
+          directions: [Number(curr.properties.direction)]
         })
         
       } else {
@@ -84,6 +91,7 @@ export function getPathFromJson (rawData) {
           accu[index].path.push(curr.geometry.coordinates)
           accu[index].timestamps.push(currTimestamp)
           accu[index].bearings.push(curr.properties.bearing)
+          accu[index].directions.push(Number(curr.properties.direction))
         } else if (currTimestamp !== accu[index].timestamps.slice(-1)[0]) {
           // if equal, deem replicate records, skip the current record
           // console.log(curr.properties.vehicle_id, currTimestamp, ' replica - deleted')
@@ -95,6 +103,7 @@ export function getPathFromJson (rawData) {
               accu[index].path.splice(i, 0, curr.geometry.coordinates)
               accu[index].timestamps.splice(i, 0, currTimestamp)
               accu[index].bearings.splice(i, 0, curr.properties.bearing)
+              accu[index].directions.splice(i, 0, Number(curr.properties.direction))
               break
             } else if (currTimestamp === accu[index].timestamps[i]) {
               // replicate record, ignore
@@ -185,6 +194,7 @@ function calcAggregatedData (pathByVehicleId) {
  *      route: '',
  *      timestamp: ,
  *      bearing: number, 
+ *      direction: number, 
  *      speedmph: number,
  *      // for heatmap
         heatRadiusThreshold: ,
@@ -232,12 +242,18 @@ export function getPointsFromPath (pathByVehicleId) {
   return pathByVehicleId.reduce(
     (accu, curr) => {
       for (let index = 0; index < curr.path.length; index++) {
+
+        // if (curr.directions[index] !== 0 && curr.directions[index] !== 1) {
+        //   alert('direction not 0 or 1', curr.vehicle_id, curr.path[index], curr.timestamps[index], curr.directions[index], typeof curr.directions[index])
+        // }
+
         accu.push({
           position: curr.path[index],
           vehicle_id: curr.vehicle_id,
           route: curr.route,
           timestamp: curr.timestamps[index],
           bearing: curr.bearings[index],
+          direction: curr.directions[index],
           speedmph: curr.speedmphs[index],
           // passenger_count
         })
@@ -248,7 +264,10 @@ export function getPointsFromPath (pathByVehicleId) {
   );
 }
 
-function calcBunchingPoints(positions, timestamps, center, anchorTime, threshold, timeWindow = 120) {
+function calcBunchingPoints(
+  positions, timestamps, directions, // positions to choose from
+  center, anchorTime, direction, // center point
+  threshold, timeWindow = 120) {
   // need to align the data first - heatmap animation
 
   // check points on any path in timeWindow
@@ -262,7 +281,17 @@ function calcBunchingPoints(positions, timestamps, center, anchorTime, threshold
   else if (UpperIndex === -1) { // all timestamps are smaller than upper bound -> [lowerIndex, end]
     UpperIndex = timestamps.length
   }
-  const bunchingPoints = positions.slice(lowerIndex, UpperIndex).filter( (curr) => distance(center, curr, {units: 'miles'}) <= threshold )
+
+  // check the direction, should be of the same
+  const sameDirectionInd = []
+  for (let i = lowerIndex; i < UpperIndex; i++) {
+    if (directions[i] === direction) {
+      sameDirectionInd.push(i)
+    }  
+  }
+
+  const bunchingPoints = positions.filter( 
+                            (curr, index) => sameDirectionInd.indexOf(index) != -1 && distance(center, curr, {units: 'miles'}) <= threshold )
 
   return bunchingPoints
 }
@@ -283,7 +312,10 @@ export function calculateBunchingPoints(points, paths, threshold, timeWindow) {
     points[index].withinThresholdVehicles = new Set();
     // calculate nearest points indeics in certain miles for all paths
     for (let i = 0; i < paths.length; i++) {
-      const bunchingPoints = calcBunchingPoints(paths[i].path, paths[i].timestamps, points[index].position, points[index].timestamp, threshold, timeWindow)
+      const bunchingPoints = calcBunchingPoints(
+                                paths[i].path, paths[i].timestamps, paths[i].directions, 
+                                points[index].position, points[index].timestamp, points[index].direction, 
+                                threshold, timeWindow)
       if (bunchingPoints.length === 0) {
         // console.log(paths[i].vehicle_id, 'did not passby ', points[index].vehicle_id)
       } else {

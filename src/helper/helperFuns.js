@@ -28,8 +28,12 @@ export const convertTimeToTimer = (timestamp) => {
   return (timestamp - TimerStart) / 1000
 }
 
-export const inverseSpeed = (speedmph) => {
-  return speedmph === 0 ? 50.0 : (100 / speedmph > 50 ? 50 : 100 / speedmph) // do not inverse when speed = 0 and speed no faster than 50
+export const getSpeed = (speedmph) => {
+  return Math.min(speedmph, 50.0) // speed no faster than 50
+}
+
+export const getInverseSpeed = (speedmph) => {
+  return (speedmph === 0 ||100 / speedmph > 50) ? 50 : 100 / speedmph // inverse speed 0 to max and speed no faster than 50
 }
 
 export const colorSchema = (vehicle_id, alpha = null) => {
