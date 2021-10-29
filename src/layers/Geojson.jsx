@@ -82,7 +82,7 @@ export function GeoJson(props) {
 
       // pointType:text Options
       // props are forwarded to a TextLayer
-      getText: d => '1',//'     ' + d.properties.speedmph.toFixed(2).toString() + ' mph',
+      getText: d => '     ' + d.properties.speedmph.toFixed(2).toString() + ' mph',
       getTextColor: d => getVehicleColorBySpeed(d.properties),
       // getTextAngle
       getTextSize: d => getSizeBySpeed(d.properties),
