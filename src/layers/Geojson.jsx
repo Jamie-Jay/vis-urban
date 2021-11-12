@@ -1,6 +1,6 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
-import { convertTimeToTimer, colorSchema, getInverseSpeed, getSpeed, isZero,colorZeroSpeed, colorSlowSpeed, colorHighlighted } from '../helper/helperFuns'
+import { convertTimeToTimer, colorSchema, getInverseSpeed, getSpeed, isZero,colorZeroSpeed, colorSlowSpeed, colorHighlighted, roundSpeed } from '../helper/helperFuns'
 import { iconAtlas, iconMapping } from '../helper/constants'
 
 export function GeoJson(props) {
@@ -14,6 +14,13 @@ export function GeoJson(props) {
   function getVehicleColorBySpeed(d) {
     return d.speedmph > settings.IconsSpeedThreshold ? colorSchema(d.vehicle_id, 200) 
               : (isZero(d.speedmph) ? colorZeroSpeed(200) : colorSlowSpeed(200)) // yellow for spd=0, red for spd<threshold
+  }
+
+  function getVehicleColorByBunching(d) {
+    if (d.withinThresholdVehicles.size > 1) {
+      return [255, 0, 0] // red for more than one vehicles nearby
+    }
+    return getVehicleColorBySpeed(d)
   }
 
   /**
@@ -35,11 +42,11 @@ export function GeoJson(props) {
 
       // control the solid fill of Polygon and MultiPolygon features(not extruded), and the Point and MultiPoint features if pointType is 'circle'
       filled: true,
-      getFillColor: d => getVehicleColorBySpeed(d.properties),
+      getFillColor: d => getVehicleColorByBunching(d.properties),
 
       // control the LineString and MultiLineString features, the outline for Polygon and MultiPolygon features, and the outline for Point and MultiPoint features if pointType is 'circle'
       stroked: false, // Whether to draw an outline around polygons and points (circles)
-      getLineColor: d => getVehicleColorBySpeed(d.properties),
+      getLineColor: d => getVehicleColorByBunching(d.properties),
       getLineWidth: 5,
       // lineWidthUnits, // one of 'meters', 'common', and 'pixels'
       lineWidthScale: 20, // A multiplier that is applied to all line widths.
@@ -61,7 +68,7 @@ export function GeoJson(props) {
       getPointRadius: d => getSizeBySpeed(d.properties), // getRadius
       // pointRadiusUnits // radiusUnits
       pointRadiusScale: settings.IconSizeScale, // radiusScale
-      pointRadiusMinPixels: 6, // radiusMinPixels
+      pointRadiusMinPixels: 10, // radiusMinPixels
       // pointRadiusMaxPixels // radiusMaxPixels
       // pointAntialiasing // antialiasing
 
@@ -72,7 +79,7 @@ export function GeoJson(props) {
       billboard: false,
       getIcon: d=> (d.properties.speedmph <= settings.IconsSpeedThreshold) ? 'markerSlow' : 'marker', // getIcon
       getIconSize: d => getSizeBySpeed(d.properties), //d => settings.IconSizeInverseSpeed ? inverseSpeed(d.speedmph) : Math.min(d.speedmph, 50.0), // getSize
-      getIconColor: d => getVehicleColorBySpeed(d.properties), //d => colorSchema(d.properties.vehicle_id), // getColor
+      getIconColor: d => getVehicleColorByBunching(d.properties), //d => colorSchema(d.properties.vehicle_id), // getColor
       getIconAngle: d => d.properties.bearing + 90, // getAngle
       // getIconPixelOffset // getPixelOffset
       iconSizeUnits: 'meters', // sizeUnits
@@ -82,8 +89,8 @@ export function GeoJson(props) {
 
       // pointType:text Options
       // props are forwarded to a TextLayer
-      getText: d => '     ' + d.properties.speedmph.toFixed(2).toString() + ' mph',
-      getTextColor: d => getVehicleColorBySpeed(d.properties),
+      getText: d => '     ' + roundSpeed(d.properties.speedmph).toString() + ' mph',
+      getTextColor: d => getVehicleColorByBunching(d.properties),
       // getTextAngle
       getTextSize: d => getSizeBySpeed(d.properties),
       getTextAnchor: 'start',

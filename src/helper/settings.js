@@ -23,20 +23,20 @@ export const DATA_CONTROLS = {
 };
 
 export const LAYER_CONTROLS = {
-  // showTripTrace: {
-  //   displayName: 'Show Trip Trace',
-  //   type: 'boolean',
-  //   value: true
-  // },
+  showTripTrace: {
+    displayName: 'Show Trip Trace',
+    type: 'boolean',
+    value: true
+  },
   showPositions: {
     displayName: 'How to Show Bus Positions',
     type: 'radio-list',
     options: {
       'Animation': 1,
       'Static': 2,
-      'Trace': 3,
-      'Hexagon': 4,
-      // 'None': 0
+      // 'Trace': 3,
+      // 'Hexagon': 4, // disable for now
+      'None': 0
     },
     value: 1
   },
@@ -61,7 +61,7 @@ export const LAYER_CONTROLS = {
   //   value: true
   // },
   IconsSpeedThreshold: {
-    displayName: 'Red Icon for Speed <= mph',
+    displayName: 'Orange Icon for Speed <= mph',
     displayCondition: [
       { showPositions: 1 }, 
       { showPositions: 2 }

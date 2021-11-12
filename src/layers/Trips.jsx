@@ -19,7 +19,7 @@ export const Trips = (props) => {
     new TripsLayer({
       id: 'trips',
       data,
-      visible: settings.showPositions === 3,
+      visible: settings.showPositions === 3 || settings.showTripTrace === true,
       opacity: 0.3,
       pickable: true,
       onHover,

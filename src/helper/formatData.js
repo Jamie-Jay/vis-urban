@@ -291,7 +291,7 @@ function calcBunchingPoints(
   }
 
   const bunchingPoints = positions.filter( 
-                            (curr, index) => sameDirectionInd.indexOf(index) != -1 && distance(center, curr, {units: 'miles'}) <= threshold )
+                            (curr, index) => sameDirectionInd.indexOf(index) !== -1 && distance(center, curr, {units: 'miles'}) <= threshold )
 
   return bunchingPoints
 }
@@ -370,6 +370,37 @@ export function getGeoJsonFromPath (pathByVehicleId) {
           type: "Feature"
         })
       }
+      return accu;
+    },
+    []
+  );
+}
+
+export function getGeoJsonFromPoints (points) {
+
+  return points.reduce(
+    (accu, curr) => {
+        accu.push({
+          geometry: {
+            type: 'Point', 
+            coordinates: curr.position
+          },
+          properties: {
+            vehicle_id: curr.vehicle_id,
+            route: curr.route,
+            timestamp: curr.timestamp,
+            bearing: curr.bearing,
+            speedmph: curr.speedmph,
+            direction: curr.direction,
+            // for heatmap
+            heatRadiusThreshold: curr.heatRadiusThreshold,
+            heatTimeWindow: curr.heatTimeWindow,
+            withinThreshold: curr.withinThreshold,
+            withinThresholdVehicles: curr.withinThresholdVehicles,
+          },
+          type: "Feature"
+        }
+        )
       return accu;
     },
     []

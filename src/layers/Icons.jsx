@@ -11,6 +11,18 @@ export const Icons = (props) => {
 
   const [withinHovered, setWithinHovered] = useState([])
 
+  function getVehicleColorBySpeed(d) {
+    return d.speedmph > settings.IconsSpeedThreshold ? colorSchema(d.vehicle_id, 200) 
+              : (isZero(d.speedmph) ? colorZeroSpeed(200) : colorSlowSpeed(200)) // gray for spd=0, orange for spd<threshold
+  }
+
+  function getVehicleColorByBunching(d) {
+    if (d.withinThresholdVehicles.size > 1) {
+      return [255, 0, 0] // red for more than one vehicle nearby
+    }
+    return getVehicleColorBySpeed(d)
+  }
+
   return [
       new IconLayer({
         id: 'icon',
@@ -33,7 +45,7 @@ export const Icons = (props) => {
         iconMapping,  // iconMapping 
         sizeScale: settings.IconSizeScale, // iconSizeScale 
         sizeUnits: 'meters', // iconSizeUnits, one of 'meters', 'common', and 'pixels' 
-        sizeMinPixels: 6, // iconSizeMinPixels 
+        sizeMinPixels: 10, // iconSizeMinPixels 
         // sizeMaxPixels  // iconSizeMaxPixels 
         billboard: false,
         // alphaCutoff, // Discard pixels whose opacity is below this threshold.
@@ -45,9 +57,10 @@ export const Icons = (props) => {
         getPosition: d => d.position,
         getSize: d => settings.IconSizeInverseSpeed ? getInverseSpeed(d.speedmph) : getSpeed(d.speedmph), // do not inverse when speed = 0 // getIconSize 
         getColor: d => {
-          const orignialColor = (d.speedmph <= settings.IconsSpeedThreshold) ? 
-                                  (isZero(d.speedmph) ? colorZeroSpeed(200) : colorSlowSpeed()) 
-                                  : colorSchema(d.vehicle_id, 200)
+          const orignialColor = getVehicleColorByBunching(d)
+          // (d.speedmph <= settings.IconsSpeedThreshold) ? 
+          //                         (isZero(d.speedmph) ? colorZeroSpeed(200) : colorSlowSpeed()) 
+          //                         : colorSchema(d.vehicle_id, 200)
           // set the points within distance a different color
           if (withinHovered.length > 0) {
             if(withinHovered.indexOf(d.position) !== -1) {

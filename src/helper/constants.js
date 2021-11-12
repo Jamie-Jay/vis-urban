@@ -7,7 +7,7 @@ export const MAPBOX_TOKEN = 'pk.eyJ1IjoiamFtaWVqYXkiLCJhIjoiY2t1NXRmeWlnMW5kZjMw
 export const START_TIME = 1630468800000;
 export const COMMON_BUS_ROUTES = ['M15', 'Bx4', 'Bx17', 'Bx19'];
 
-export const COLOR_PALETTE = [
+export const COLOR_PALETTE_VEC = [
   [0xF4, 0xEC, 0x15],
   [0xDA, 0xF0, 0x17],
   [0xBB, 0xEC, 0x19],
@@ -32,6 +32,33 @@ export const COLOR_PALETTE = [
   [0x3B, 0x2F, 0xA0],
   [0x4E, 0x2F, 0x9C],
   [0x60, 0x30, 0x99],
+];
+
+export const COLOR_PALETTE_HEX = [
+  '#F4EC15',
+  '#DAF017',
+  '#BBEC19',
+  '#9DE81B',
+  '#80E41D',
+  '#66E01F',
+  '#4CDC20',
+  '#34D822',
+  '#24D249',
+  '#25D042',
+  '#26CC58',
+  '#28C86D',
+  '#29C481',
+  '#2AC093',
+  '#2BBCA4',
+  '#2BB5B8',
+  '#2C99B4',
+  '#2D7EB0',
+  '#2D65AC',
+  '#2E4EA4',
+  '#2E38A4',
+  '#3B2FA0',
+  '#4E2F9C',
+  '#603099'
 ];
 
 const ambientLight = new AmbientLight({

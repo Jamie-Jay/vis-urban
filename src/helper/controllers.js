@@ -90,11 +90,11 @@ export class LayerControls extends Component {
   }
 
   render() {
-    const { settings, propCtrls = {} } = this.props;
+    const { title, settings, propCtrls = {} } = this.props;
 
     return (
       <div>
-        <span><b>Map Displaying Controller</b></span>
+        <span><b>{title}</b></span>
         <div style={{
             border: "thin solid gray",
             borderRadius: '10px'
@@ -280,7 +280,7 @@ const MultiSelector = ({ settingName, value, onChange }) => {
           Object.keys(NYC_BUS_ROUTES_BY_COLOR).map((key,i)=>{
             var items = NYC_BUS_ROUTES_BY_COLOR[key].map((s,index)=>{
               return (
-                <option key={index} style={{color: {key}}}>{s.route_id}</option>
+                <option key={index} style={{color: '#' + key}}>{s.route_id}</option>
               )
             })
             return(

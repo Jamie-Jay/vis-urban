@@ -21,11 +21,10 @@ import {
 } from './helper/controllers';
 import { LAYER_CONTROLS, DATA_CONTROLS } from './helper/settings'
 import { convertTimeToTimer, setTimerStart } from './helper/helperFuns';
-import { calculateBunchingPoints } from './helper/formatData'
+import { calculateBunchingPoints, getGeoJsonFromPoints } from './helper/formatData'
 
 // Trips can only be called in a function, it uses hooks
 export function MapLayers (props) {
-  // trips={this.state.data} points={this.state.points} mapStyle={this.state.style}
   const { data, mapStyle, setSelectedDataSource } = props
 
   // time sync and control
@@ -54,6 +53,9 @@ export function MapLayers (props) {
   useEffect(() => {
     // update the nearest points on the same bus route
     calculateBunchingPoints(data.points, data.paths, settings.HightlightRedius, settings.HightlightTimeWindow)
+    if (data.points && data.points.length > 0) {
+      data.json = getGeoJsonFromPoints(data.points)
+    }
 
     return () => {
       // cleanup
@@ -72,10 +74,15 @@ export function MapLayers (props) {
   function _onHover({ x, y, object, index }) {
 
     let withinThresholdVehicles = ''
-    if (object && !object.path && object.vehicle_id) {
+    if (object && !object.path && ( object.vehicle_id || (object.properties && object.properties.vehicle_id) )) {
+      object.vehicle_id &&
       object.withinThresholdVehicles.forEach(
         (curr) => withinThresholdVehicles += curr + ', '
-      )
+      );
+      object.properties && object.properties.vehicle_id &&
+      object.properties.withinThresholdVehicles.forEach(
+        (curr) => withinThresholdVehicles += curr + ', '
+      );
     }
 
     const label = object ? 
@@ -90,10 +97,13 @@ export function MapLayers (props) {
             `route: ${object.properties.route}`,
             `bearing: ${object.properties.bearing.toFixed(2)}`,
             // `destination: ${object.properties.destination_name}`,
-            // `direction: ${object.properties.direction}`,
+            `direction: ${object.properties.direction}`,
             // `trip id: ${object.properties.trip_id}`,
             `speed: ${object.properties.speedmph.toFixed(2)} mph`,
-            `time: ${new Date(object.properties.timestamp).toString()}`
+            `time: ${new Date(object.properties.timestamp).toString()}`,
+            `nearby: ${object.properties.withinThresholdVehicles.size} vehicles (${withinThresholdVehicles}) passing by 
+                    (${object.properties.withinThreshold.length} nearby bus positions with the same direction on the same route recorded) 
+                    in ${object.properties.heatRadiusThreshold} miles within ${object.properties.heatTimeWindow} seconds`
           ] // geojson format (data.json)
           : 
           object.path ? 
@@ -253,6 +263,7 @@ export function MapLayers (props) {
           }}
           />
         <LayerControls
+          title='Map Displaying Controller'
           settings={settings}
           propCtrls={LAYER_CONTROLS}
           onChange={(settingName, newValue) => {
@@ -284,7 +295,7 @@ export function MapLayers (props) {
         />
       </DeckGL>
       {
-        (settings.showPositions === 1 || settings.showPositions === 3) ?
+        (data && data.length !== 0) && (settings.showPositions === 1 || settings.showPositions === 3) ?
           <span style={{...layerControl, top: '0px', right: '300px'}}>
           <div style={{ width: '100%', marginTop: "1rem" }}>
             <b>Trace & Animation Controller</b>

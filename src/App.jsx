@@ -1,6 +1,6 @@
 import React from 'react';
 import { MapLayers } from './MapLayers'
-import { getPathFromJson, getPointsFromPath, getGeoJsonFromPath, calculateBunchingPoints } from './helper/formatData'
+import { getPathFromJson, getPointsFromPath, calculateBunchingPoints, getGeoJsonFromPoints } from './helper/formatData'
 import { layerControl } from './helper/style';
 import { MapStylePicker } from './helper/controllers';
 import { START_TIME, COMMON_BUS_ROUTES } from './helper/constants';
@@ -14,7 +14,6 @@ export default class App extends React.Component{
     style: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
     selectedTimeStamp: START_TIME,
     busRoutes: [],
-    dataUrl: 1, // BASE_URL
     currMaxTime: 4000,
     currMinTime: 0
   }
@@ -29,9 +28,9 @@ export default class App extends React.Component{
     this.updateDataCollection(START_TIME, COMMON_BUS_ROUTES)
   }
 
-  getApiData = async (selectedTimeStamp, busRoute, readLocalFile = false) => {
+  getApiData = async (selectedTimeStamp, busRoute, dataUrl, readLocalFile = false) => {
     // combine url
-    const urlStr = readLocalFile ? './geojson.json' : getUrl(selectedTimeStamp, busRoute, this.state.dataUrl)
+    const urlStr = readLocalFile ? './geojson.json' : getUrl(selectedTimeStamp, busRoute, dataUrl)
     // console.log(urlStr)
 
     await fetch(urlStr, {
@@ -85,8 +84,8 @@ export default class App extends React.Component{
 
     const paths = getPathFromJson(rawData)
     const points = getPointsFromPath(paths)
-    const json = getGeoJsonFromPath(paths)
     calculateBunchingPoints(points, paths, 0.5, 120)
+    const json = getGeoJsonFromPoints(points)
 
     return { json, paths, points }
   };
@@ -157,7 +156,7 @@ export default class App extends React.Component{
     return busRoute + '-' + timestamp;
   }
 
-  updateDataCollection(selectedTimeStamp, busRoutes) {
+  updateDataCollection(selectedTimeStamp, busRoutes, dataUrl) {
     // get all the possible combination of timestamp and busroute
     // then compare with the keys in data collection
     const { dataJsonCollection} = this.state;
@@ -177,7 +176,7 @@ export default class App extends React.Component{
         dataJsonCollection[currKey].show = true;
       } else {
         // request url
-        this.getApiData(selectedTimeStamp, element);
+        this.getApiData(selectedTimeStamp, element, dataUrl);
         hasUpdate = true
       }
     }
@@ -188,12 +187,9 @@ export default class App extends React.Component{
   setSelectedDataSource = (newChoice) => {
 
     const {dataTime, busRoutes, dataUrl} = newChoice;
-    this.setState({
-      dataUrl
-    })
 
     // console.log('app', dataTime, busRoutes)
-    if (this.updateDataCollection(dataTime, busRoutes) === false) {
+    if (this.updateDataCollection(dataTime, busRoutes, dataUrl) === false) {
       this.setDataToShow()
     }
   }
