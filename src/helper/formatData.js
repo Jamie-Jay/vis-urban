@@ -71,49 +71,74 @@ export function getPathFromJson (rawData) {
         );
       currTimestamp = currTimestamp.getTime() //currTimestamp.getMinutes() * 60 + currTimestamp.getSeconds()
 
-      const index = accu.findIndex((currentValue) => currentValue.vehicle_id === curr.properties.vehicle_id);
-      if (index < 0) {
-        // didn't find the vehicle, create new
-        accu.push({
-          vehicle_id: curr.properties.vehicle_id,
-          route: curr.properties.route,
-          path: [curr.geometry.coordinates],
-          timestamps: [currTimestamp],
-          bearings: [curr.properties.bearing],
-          directions: [Number(curr.properties.direction)]
-        })
-        
-      } else {
-        // find the right index for the new point, ascending by time stamps
-        // assume the order has already roughtly been ascending 
-        if (currTimestamp > accu[index].timestamps.slice(-1)[0]) {
-          // if larger than the last timestamp, push
-          accu[index].path.push(curr.geometry.coordinates)
-          accu[index].timestamps.push(currTimestamp)
-          accu[index].bearings.push(curr.properties.bearing)
-          accu[index].directions.push(Number(curr.properties.direction))
-        } else if (currTimestamp !== accu[index].timestamps.slice(-1)[0]) {
-          // if equal, deem replicate records, skip the current record
-          // console.log(curr.properties.vehicle_id, currTimestamp, ' replica - deleted')
-        } else {
-          // smaller than the last record, search the right index backward
-          for (let i = accu[index].length -  1; i >= 0; i++) {
-            if (currTimestamp < accu[index].timestamps[i]) {
-              // insert the records
-              accu[index].path.splice(i, 0, curr.geometry.coordinates)
-              accu[index].timestamps.splice(i, 0, currTimestamp)
-              accu[index].bearings.splice(i, 0, curr.properties.bearing)
-              accu[index].directions.splice(i, 0, Number(curr.properties.direction))
-              break
-            } else if (currTimestamp === accu[index].timestamps[i]) {
-              // replicate record, ignore
-              break
-            }
-          }
+      return addPointsToPath(accu, curr.properties, currTimestamp, curr.geometry.coordinates);
+    },
+    []
+  );
+
+  // calculate individual and average speed for each path
+  // and center point
+  calcAggregatedData (pathByVehicleId);
+
+  return pathByVehicleId
+}
+
+function addPointsToPath(accu, curr, timestamp, position) {
+
+  const index = accu.findIndex((currentValue) => currentValue.vehicle_id === curr.vehicle_id);
+  if (index < 0) {
+    // didn't find the vehicle, create new
+    accu.push({
+      vehicle_id: curr.vehicle_id,
+      route: curr.route,
+      path: [position],
+      timestamps: [timestamp],
+      bearings: [curr.bearing],
+      directions: [Number(curr.direction)]
+    })
+    // console.log(curr.vehicle_id, timestamp, ' NEW - VE')
+  } else {
+    // find the right index for the new point, ascending by time stamps
+    // assume the order has already roughtly been ascending 
+    if (timestamp > accu[index].timestamps.slice(-1)[0]) {
+      // if larger than the last timestamp, push
+      accu[index].path.push(position)
+      accu[index].timestamps.push(timestamp)
+      accu[index].bearings.push(curr.bearing)
+      accu[index].directions.push(Number(curr.direction))
+      // console.log(curr.vehicle_id, timestamp, ' larger than the last timestamp')
+    } else if (timestamp === accu[index].timestamps.slice(-1)[0]) {
+      // if equal, deem replicate records, skip the current record
+      // console.log(curr.vehicle_id, timestamp, ' replica - deleted')
+    } else {
+      // console.log(curr.vehicle_id, timestamp, ' smaller than the last record')
+      // smaller than the last record, search the right index backward
+      for (let i = accu[index].length - 1; i >= 0; i++) {
+        if (timestamp < accu[index].timestamps[i]) {
+          // insert the records
+          accu[index].path.splice(i, 0, position)
+          accu[index].timestamps.splice(i, 0, timestamp)
+          accu[index].bearings.splice(i, 0, curr.bearing)
+          accu[index].directions.splice(i, 0, Number(curr.direction))
+          // console.log(curr.vehicle_id, timestamp, i, ' smaller than the last record')
+          break
+        } else if (timestamp === accu[index].timestamps[i]) {
+          // replicate record, ignore
+          // console.log(curr.vehicle_id, timestamp, ' replica2 - deleted')
+          break
         }
       }
+    }
+  }
 
-      return accu;
+  return accu;
+}
+
+export function getPathFromPoints (points) {
+
+  const pathByVehicleId = points.reduce(
+    (accu, curr) => {
+      return addPointsToPath(accu, curr, curr.timestamp, curr.position);
     },
     []
   );
@@ -237,9 +262,13 @@ export function getPointsFromJson (rawData) {
   );
 }
 
-export function getPointsFromPath (pathByVehicleId) {
+export function getPointsFromPath (paths) {
 
-  return pathByVehicleId.reduce(
+  if (!paths || paths.length == 0) {
+    return null 
+  }
+
+  return paths.reduce(
     (accu, curr) => {
       for (let index = 0; index < curr.path.length; index++) {
 
@@ -350,9 +379,13 @@ export function calculateBunchingPoints(points, paths, threshold, timeWindow) {
   ...
 ]
  */
-export function getGeoJsonFromPath (pathByVehicleId) {
+export function getGeoJsonFromPath (paths) {
 
-  return pathByVehicleId.reduce(
+  if (!paths || paths.length == 0) {
+    return null 
+  }
+
+  return paths.reduce(
     (accu, curr) => {
       for (let index = 0; index < curr.path.length; index++) {
         accu.push({
@@ -377,6 +410,10 @@ export function getGeoJsonFromPath (pathByVehicleId) {
 }
 
 export function getGeoJsonFromPoints (points) {
+
+  if (!points || points.length == 0) {
+   return null 
+  }
 
   return points.reduce(
     (accu, curr) => {

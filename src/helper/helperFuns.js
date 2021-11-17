@@ -33,11 +33,11 @@ export const isZero = (decimal) => {
   return parseFloat(decimal) === parseFloat(0)
 }
 
-export const getSpeed = (speedmph) => {
+const getSpeed = (speedmph) => {
   return Math.min(speedmph, 50.0) // speed no faster than 50
 }
 
-export const getInverseSpeed = (speedmph) => {
+const getInverseSpeed = (speedmph) => {
   return (speedmph === 0 ||100 / speedmph > 50) ? 50 : 100 / speedmph // inverse speed 0 to max and speed no faster than 50
 }
 
@@ -45,7 +45,7 @@ export const colorZeroSpeed = (alpha = null) => { // light gray
   return alpha == null ? [211, 211, 211] : [211, 211, 211, alpha] // a is 255 if not supplied. 
 }
 
-export const colorSlowSpeed = (alpha = null) => { // orange 255 165 0
+const colorSlowSpeed = (alpha = null) => { // orange 255 165 0
   return alpha == null ? [255, 165, 0] : [255, 165, 0, alpha]
 }
 
@@ -79,4 +79,20 @@ export const roundSpeed = (speedmph) => {
               )
 
   return speedmph.toFixed(0)
+}
+
+export function getSizeBySpeed(d, IconSizeInverseSpeed) {
+  return IconSizeInverseSpeed ? getInverseSpeed(d.speedmph) : getSpeed(d.speedmph)
+}
+
+function getVehicleColorBySpeed(d, IconsSpeedThreshold) {
+  return d.speedmph > IconsSpeedThreshold ? colorSchema(d.vehicle_id, 200) 
+            : (isZero(d.speedmph) ? colorZeroSpeed(200) : colorSlowSpeed(200)) // yellow for spd=0, red for spd<threshold
+}
+
+export function getVehicleColorByBunching(d, IconsSpeedThreshold) {
+  if (d.withinThresholdVehicles.size > 1) {
+    return [255, 0, 0] // red for more than one vehicles nearby
+  }
+  return getVehicleColorBySpeed(d, IconsSpeedThreshold)
 }

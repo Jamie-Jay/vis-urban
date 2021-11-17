@@ -2,26 +2,14 @@ import { useState } from 'react';
 import { IconLayer } from '@deck.gl/layers';
 import { easeBackInOut } from 'd3';
 
-import { getInverseSpeed, colorSchema, getSpeed, isZero, colorZeroSpeed, colorSlowSpeed, colorHighlighted } from '../helper/helperFuns'
+import { isZero, colorZeroSpeed, colorHighlighted, 
+  getSizeBySpeed, getVehicleColorByBunching } from '../helper/helperFuns'
 import { iconAtlas, iconMapping } from '../helper/constants'
 
 export const Icons = (props) => {
 
   const { data, settings, onHover } = props;
-
   const [withinHovered, setWithinHovered] = useState([])
-
-  function getVehicleColorBySpeed(d) {
-    return d.speedmph > settings.IconsSpeedThreshold ? colorSchema(d.vehicle_id, 200) 
-              : (isZero(d.speedmph) ? colorZeroSpeed(200) : colorSlowSpeed(200)) // gray for spd=0, orange for spd<threshold
-  }
-
-  function getVehicleColorByBunching(d) {
-    if (d.withinThresholdVehicles.size > 1) {
-      return [255, 0, 0] // red for more than one vehicle nearby
-    }
-    return getVehicleColorBySpeed(d)
-  }
 
   return [
       new IconLayer({
@@ -55,9 +43,9 @@ export const Icons = (props) => {
         
         getIcon: d => (d.speedmph <= settings.IconsSpeedThreshold) ? 'markerSlow' : 'marker', // getIcon 
         getPosition: d => d.position,
-        getSize: d => settings.IconSizeInverseSpeed ? getInverseSpeed(d.speedmph) : getSpeed(d.speedmph), // do not inverse when speed = 0 // getIconSize 
+        getSize: d => getSizeBySpeed(d, settings.IconSizeInverseSpeed), // do not inverse when speed = 0 // getIconSize 
         getColor: d => {
-          const orignialColor = getVehicleColorByBunching(d)
+          const orignialColor = getVehicleColorByBunching(d, settings.IconsSpeedThreshold)
           // (d.speedmph <= settings.IconsSpeedThreshold) ? 
           //                         (isZero(d.speedmph) ? colorZeroSpeed(200) : colorSlowSpeed()) 
           //                         : colorSchema(d.vehicle_id, 200)

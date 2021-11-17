@@ -1,27 +1,12 @@
 import { GeoJsonLayer } from '@deck.gl/layers';
 import { DataFilterExtension } from '@deck.gl/extensions';
-import { convertTimeToTimer, colorSchema, getInverseSpeed, getSpeed, isZero,colorZeroSpeed, colorSlowSpeed, colorHighlighted, roundSpeed } from '../helper/helperFuns'
+import { convertTimeToTimer, colorHighlighted, roundSpeed,
+  getSizeBySpeed, getVehicleColorByBunching } from '../helper/helperFuns'
 import { iconAtlas, iconMapping } from '../helper/constants'
 
 export function GeoJson(props) {
 
   const { data, currentTime, onHover, settings } = props;
-
-  function getSizeBySpeed(d) {
-    return settings.IconSizeInverseSpeed ? getInverseSpeed(d.speedmph) : getSpeed(d.speedmph)
-  }
-
-  function getVehicleColorBySpeed(d) {
-    return d.speedmph > settings.IconsSpeedThreshold ? colorSchema(d.vehicle_id, 200) 
-              : (isZero(d.speedmph) ? colorZeroSpeed(200) : colorSlowSpeed(200)) // yellow for spd=0, red for spd<threshold
-  }
-
-  function getVehicleColorByBunching(d) {
-    if (d.withinThresholdVehicles.size > 1) {
-      return [255, 0, 0] // red for more than one vehicles nearby
-    }
-    return getVehicleColorBySpeed(d)
-  }
 
   /**
    * Data format:
@@ -42,11 +27,11 @@ export function GeoJson(props) {
 
       // control the solid fill of Polygon and MultiPolygon features(not extruded), and the Point and MultiPoint features if pointType is 'circle'
       filled: true,
-      getFillColor: d => getVehicleColorByBunching(d.properties),
+      getFillColor: d => getVehicleColorByBunching(d.properties, settings.IconsSpeedThreshold),
 
       // control the LineString and MultiLineString features, the outline for Polygon and MultiPolygon features, and the outline for Point and MultiPoint features if pointType is 'circle'
       stroked: false, // Whether to draw an outline around polygons and points (circles)
-      getLineColor: d => getVehicleColorByBunching(d.properties),
+      getLineColor: d => getVehicleColorByBunching(d.properties, settings.IconsSpeedThreshold),
       getLineWidth: 5,
       // lineWidthUnits, // one of 'meters', 'common', and 'pixels'
       lineWidthScale: 20, // A multiplier that is applied to all line widths.
@@ -65,7 +50,7 @@ export function GeoJson(props) {
 
       // pointType:circle Options
       // props are forwarded to a ScatterplotLayer
-      getPointRadius: d => getSizeBySpeed(d.properties), // getRadius
+      getPointRadius: d => getSizeBySpeed(d.properties, settings.IconSizeInverseSpeed), // getRadius
       // pointRadiusUnits // radiusUnits
       pointRadiusScale: settings.IconSizeScale, // radiusScale
       pointRadiusMinPixels: 10, // radiusMinPixels
@@ -78,8 +63,8 @@ export function GeoJson(props) {
       iconMapping, // iconMapping
       billboard: false,
       getIcon: d=> (d.properties.speedmph <= settings.IconsSpeedThreshold) ? 'markerSlow' : 'marker', // getIcon
-      getIconSize: d => getSizeBySpeed(d.properties), //d => settings.IconSizeInverseSpeed ? inverseSpeed(d.speedmph) : Math.min(d.speedmph, 50.0), // getSize
-      getIconColor: d => getVehicleColorByBunching(d.properties), //d => colorSchema(d.properties.vehicle_id), // getColor
+      getIconSize: d => getSizeBySpeed(d.properties, settings.IconSizeInverseSpeed), //d => settings.IconSizeInverseSpeed ? inverseSpeed(d.speedmph) : Math.min(d.speedmph, 50.0), // getSize
+      getIconColor: d => getVehicleColorByBunching(d.properties, settings.IconsSpeedThreshold), //d => colorSchema(d.properties.vehicle_id), // getColor
       getIconAngle: d => d.properties.bearing + 90, // getAngle
       // getIconPixelOffset // getPixelOffset
       iconSizeUnits: 'meters', // sizeUnits
@@ -90,9 +75,9 @@ export function GeoJson(props) {
       // pointType:text Options
       // props are forwarded to a TextLayer
       getText: d => '     ' + roundSpeed(d.properties.speedmph).toString() + ' mph',
-      getTextColor: d => getVehicleColorByBunching(d.properties),
+      getTextColor: d => getVehicleColorByBunching(d.properties, settings.IconsSpeedThreshold),
       // getTextAngle
-      getTextSize: d => getSizeBySpeed(d.properties),
+      getTextSize: d => getSizeBySpeed(d.properties, settings.IconSizeInverseSpeed),
       getTextAnchor: 'start',
       // getTextAlignmentBaseline
       // getTextPixelOffset

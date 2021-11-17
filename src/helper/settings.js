@@ -28,6 +28,13 @@ export const LAYER_CONTROLS = {
     type: 'boolean',
     value: true
   },
+  TripTraceWidth: {
+    displayName: 'Trip Trace Width = avg speed * ',
+    type: 'range',
+    value: 10,
+    min: 0,
+    max: 100
+  },
   showPositions: {
     displayName: 'How to Show Bus Positions',
     type: 'radio-list',
@@ -39,16 +46,6 @@ export const LAYER_CONTROLS = {
       'None': 0
     },
     value: 1
-  },
-  TripTraceWidth: {
-    displayName: 'Trip Trace Width = avg speed * ',
-    displayCondition: [
-      { showPositions: 3 }
-    ],
-    type: 'range',
-    value: 10,
-    min: 0,
-    max: 100
   },
   // showScatterplot: {
   //   displayName: 'Show Arrow Animation',

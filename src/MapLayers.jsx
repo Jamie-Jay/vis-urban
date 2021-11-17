@@ -5,9 +5,10 @@ import { WebMercatorViewport } from '@deck.gl/core';
 import { center, points, getCoord, lineString, bbox } from '@turf/turf'
 
 import { Trips } from './layers/Trips'
+// import { Path } from './layers/Path'
 // import { ScatterPlots } from './layers/ScatterPlots'
 // import { Heatmaps } from './layers/Heatmaps'
-import { Hexagons } from './layers/Hexagons'
+// import { Hexagons } from './layers/Hexagons'
 import { GeoJson } from './layers/Geojson'
 import { Icons } from './layers/Icons'
 
@@ -217,12 +218,12 @@ export function MapLayers (props) {
   //     settings: settings,
   //     onHover: hover => _onHover(hover)
   //   })
-  ).concat(
-    Hexagons({
-      data: data.points,
-      settings: settings,
-      onHover: hover => _onHover(hover)
-    })
+  // ).concat(
+  //   Hexagons({
+  //     data: data.points,
+  //     settings: settings,
+  //     onHover: hover => _onHover(hover)
+  //   })
   ).concat(
     GeoJson({
       data: data.json,
