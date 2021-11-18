@@ -2,12 +2,12 @@ import React from 'react';
 import { MapLayersReal } from './MapLayersReal'
 // import { MapLayersRealStatic } from './MapLayersRealStatic'
 import { getPathFromJson, getPointsFromPath, calculateBunchingPoints, getGeoJsonFromPoints, getPathFromPoints } from './helper/formatData'
-import { layerControl } from './helper/style';
+// import { layerControl } from './helper/style';
 import { MapStylePicker } from './helper/controllers';
-import { START_TIME, COMMON_BUS_ROUTES } from './helper/constants';
-import { getUrl } from './helper/helperFuns'
-import { Aside } from './components/Aside'
-import Header from './components/Header'
+// import { START_TIME, COMMON_BUS_ROUTES } from './helper/constants';
+// import { getUrl } from './helper/helperFuns'
+// // import { Aside } from './components/Aside'
+// import Header from './components/Header'
 // import { queryData } from './realTime/queryData'
 
 const DURATION = 3 // minutes
