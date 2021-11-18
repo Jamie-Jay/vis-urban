@@ -1,13 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
+import AppReal from './AppReal';
+import AppHistorical from './AppHistorical';
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
 // import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  // // <React.StrictMode> // cause render two times
+  //   <App />,
+  // // </React.StrictMode>,
+  <BrowserRouter>
+    <Routes>
+      <Route exact path="/" element={ <AppHistorical /> } />
+      <Route path="/real" element={ <AppReal /> } />
+    </Routes>
+  </BrowserRouter>,
   document.getElementById('root')
 );
 

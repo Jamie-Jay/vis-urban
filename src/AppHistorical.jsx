@@ -5,8 +5,9 @@ import { layerControl } from './helper/style';
 import { MapStylePicker } from './helper/controllers';
 import { START_TIME, COMMON_BUS_ROUTES } from './helper/constants';
 import { getUrl } from './helper/helperFuns'
+// import { Aside } from './components/Aside'
 
-export default class App extends React.Component{
+export default class AppHistorical extends React.Component{
 
   state = {
     dataJsonCollection: [], // store all the raw json from api - [ bus-timestamp: {json}, bus-timestamp: {json}...]
@@ -217,6 +218,10 @@ export default class App extends React.Component{
           <br/>
           {this.state.busRoutes.join(', ')}
         </span>
+        {/* <Aside
+          dateTime={new Date(this.state.selectedTimeStamp).toString()}
+          busRoutes={this.state.busRoutes.join(', ')}
+        /> */}
       </div>
     )
   }
