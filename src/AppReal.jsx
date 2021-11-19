@@ -50,28 +50,29 @@ export default class AppReal extends React.Component{
 }
 
   queryData() {
-    // const urlStr = 'https://vj9tinkr4k.execute-api.us-east-1.amazonaws.com/dev/ALL';//
+    const urlStr = 'https://vj9tinkr4k.execute-api.us-east-1.amazonaws.com/dev/ALL';//
     // const urlStr = 'http://localhost:4000/dev/BX4'
-    const urlStr = 'https://vj9tinkr4k.execute-api.us-east-1.amazonaws.com/dev/';//'http://localhost:5000/'
+    // const urlStr = 'http://localhost:4000/dev/'
+    // const urlStr = 'https://vj9tinkr4k.execute-api.us-east-1.amazonaws.com/dev/';//'http://localhost:5000/'
     this.timer = setInterval(() => {
-      // fetch(urlStr, {
-      //   method: "GET",
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Accept': 'application/json'
-      //     },
-      // })
       fetch(urlStr, {
-        method: "POST",
-        mode: 'cors',
+        method: "GET",
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
           },
-    　　body:JSON.stringify({
-      　　'routeId' : 'ALL' // 'ALL' to get all positions
-      　　})
       })
+    //   fetch(urlStr, {
+    //     method: "POST",
+    //     mode: 'cors',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'Accept': 'application/json'
+    //       },
+    // 　　body:JSON.stringify({
+    //   　　'routeId' : 'ALL' // 'ALL' to get all positions
+    //   　　})
+    //   })
       .then(response => response.json()) // Promise
       .then(data =>  {
         // console.log(data)
