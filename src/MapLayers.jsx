@@ -16,7 +16,6 @@ import { WithTime } from "./helper/Timer";
 import { tooltipStyle, layerControl } from './helper/style'; // Mouseover interaction
 import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, DEFAULT_THEME } from './helper/constants'
 import {
-  // MapStylePicker,
   LayerControls, // create settings for our scatterplot layer
   DataSourceControls
 } from './helper/controllers';
@@ -26,7 +25,7 @@ import { calculateBunchingPoints, getGeoJsonFromPoints } from './helper/formatDa
 
 // Trips can only be called in a function, it uses hooks
 export function MapLayers (props) {
-  const { data, mapStyle, setSelectedDataSource } = props
+  const { data, mapStyle, setSelectedDataSource, panelVisibilitySettings } = props
 
   // time sync and control
   setTimerStart(props.currMinTime) // adjust the start time for timer to 0, in case of negative/huge timer
@@ -251,30 +250,38 @@ export function MapLayers (props) {
         {hover.label.map(content => (<div key={content}>{content}</div>))}
         </div>
       )}
-      <div className="layer-controls" style ={{...layerControl, overflow: 'auto', height:'500px'}}>
-        <DataSourceControls
-          settings={settings}
-          propCtrls={DATA_CONTROLS}
-          onChange={(newSetting) => {
-            setSettings({
-              ...settings,
-              ...newSetting
-            });
-            setSelectedDataSource(newSetting)
-          }}
-          />
-        <LayerControls
-          title='Map Displaying Controller'
-          settings={settings}
-          propCtrls={LAYER_CONTROLS}
-          onChange={(settingName, newValue) => {
-            setSettings({
-              ...settings,
-              [settingName]: newValue
-            });
-          }}
-        />
-      </div>
+        { panelVisibilitySettings && panelVisibilitySettings.dataSourceController === true ?
+          <div className="layer-controls" style ={{...layerControl, /*overflow: 'auto', */right: '300px'}}>
+            <DataSourceControls
+              settings={settings}
+              propCtrls={DATA_CONTROLS}
+              onChange={(newSetting) => {
+                setSettings({
+                  ...settings,
+                  ...newSetting
+                });
+                setSelectedDataSource(newSetting)
+              }}
+            />
+          </div>
+          : null
+        }
+        { panelVisibilitySettings && panelVisibilitySettings.mapDisplayController === true ?
+          <div className="layer-controls" style ={{...layerControl, overflow: 'auto'}}>
+            <LayerControls
+              title='Map Displaying Controller'
+              settings={settings}
+              propCtrls={LAYER_CONTROLS}
+              onChange={(settingName, newValue) => {
+                setSettings({
+                  ...settings,
+                  [settingName]: newValue
+                });
+              }}
+              />
+            </div>
+          : null
+        }
 
       <DeckGL
         layers={layers}
@@ -296,8 +303,9 @@ export function MapLayers (props) {
         />
       </DeckGL>
       {
-        (data && data.length !== 0) && (settings.showPositions === 1 || settings.showPositions === 3) ?
-          <span style={{...layerControl, top: '0px', right: '300px'}}>
+        ( panelVisibilitySettings && panelVisibilitySettings.timerBar === true &&
+          data && data.length !== 0) && (settings.showPositions === 1 || settings.showPositions === 3) ?
+          <span style={{...layerControl, right: '600px'}}>
           <div style={{ width: '100%', marginTop: "1rem" }}>
             <b>Trace & Animation Controller</b>
             <input

@@ -1,5 +1,28 @@
 import { START_TIME, COMMON_BUS_ROUTES } from './constants'
 
+export const PANELS_TO_SHOW = {
+  currentDataSourcePanel: {
+    displayName: 'Currnet Data Source Panel',
+    type: 'boolean',
+    value: true
+  },
+  timerBar: {
+    displayName: 'Timer Bar',
+    type: 'boolean',
+    value: true
+  },
+  dataSourceController: {
+    displayName: 'Data Source Controller',
+    type: 'boolean',
+    value: false
+  },
+  mapDisplayController: {
+    displayName: 'Map Display Controller',
+    type: 'boolean',
+    value: false
+  }
+};
+
 export const DATA_CONTROLS = {
   dataUrl: {
     displayName: 'Data Url Host (to be tested)',

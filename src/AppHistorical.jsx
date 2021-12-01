@@ -4,8 +4,11 @@ import { getPathFromJson, getPointsFromPath, calculateBunchingPoints, getGeoJson
 import { layerControl } from './helper/style';
 import { MapStylePicker } from './helper/controllers';
 import { START_TIME, COMMON_BUS_ROUTES } from './helper/constants';
+import { PANELS_TO_SHOW } from './helper/settings'
 import { getUrl } from './helper/helperFuns'
-// import { Aside } from './components/Aside'
+import { Aside } from './components/Aside'
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
 
 export default class AppHistorical extends React.Component{
 
@@ -16,16 +19,29 @@ export default class AppHistorical extends React.Component{
     selectedTimeStamp: START_TIME,
     busRoutes: [],
     currMaxTime: 4000,
-    currMinTime: 0
+    currMinTime: 0,
+    panelVisibilitySettings: null
   }
 
   shouldComponentUpdate(nextProps, nextState) {
     return nextState.selectedTimeStamp !== this.state.selectedTimeStamp 
           || nextState.busRoutes !== this.state.busRoutes
           || nextState.style !== this.state.style
+          || nextState.panelVisibilitySettings !== this.state.panelVisibilitySettings
   }
 
   componentDidMount(){
+    const panelVisibilitySettings = Object.keys(PANELS_TO_SHOW).reduce(
+      (accu, key) => ({
+        ...accu,
+        [key]: PANELS_TO_SHOW[key].value
+      }),
+      {}
+    )
+    this.setState({
+      panelVisibilitySettings
+    })
+
     this.updateDataCollection(START_TIME, COMMON_BUS_ROUTES)
   }
 
@@ -33,7 +49,7 @@ export default class AppHistorical extends React.Component{
     // combine url
     const urlStr = readLocalFile ? './geojson.json' : getUrl(selectedTimeStamp, busRoute, dataUrl)
     // console.log(urlStr)
-
+    NProgress.start();
     await fetch(urlStr, {
       method: "GET",
       headers: {
@@ -68,11 +84,13 @@ export default class AppHistorical extends React.Component{
       } else {
         alert('Data points for ' + new Date(selectedTimeStamp) + ' ' + busRoute + ' is empty. Please choose another timepoint or bus route.');
       }
+      NProgress.done();
     }, err => {
       // Status Code: 500 Internal Server Error
       console.log(err); 
       alert('Data points for ' + new Date(selectedTimeStamp) + ' ' + busRoute + ' is not available.', err);
       // this.getApiData(0, 0, readLocalFile = true)
+      NProgress.done();
     })
 
     /** url exceptions:
@@ -195,6 +213,13 @@ export default class AppHistorical extends React.Component{
     }
   }
 
+  setPanelVisibility = (settings) => {
+    // console.log(settings)
+    this.setState({
+      panelVisibilitySettings: settings
+    })
+  }
+
   render(){
     // console.log("this.state in render", this.state)
 
@@ -210,18 +235,23 @@ export default class AppHistorical extends React.Component{
           currMaxTime={this.state.currMaxTime}
           mapStyle={this.state.style}
           setSelectedDataSource={this.setSelectedDataSource}
+          panelVisibilitySettings={this.state.panelVisibilitySettings}
         />
-        <span style={{...layerControl, top: '0px'}}>
-          <b>Current Data Source:</b>
-          <br/>
-          {new Date(this.state.selectedTimeStamp).toString()}
-          <br/>
-          {this.state.busRoutes.join(', ')}
-        </span>
-        {/* <Aside
-          dateTime={new Date(this.state.selectedTimeStamp).toString()}
-          busRoutes={this.state.busRoutes.join(', ')}
-        /> */}
+        { this.state.panelVisibilitySettings && this.state.panelVisibilitySettings.currentDataSourcePanel === true ?
+          <span style={{...layerControl, top: '0px', right: '900px'}}>
+            <b>Current Data Source:</b>
+            <br/>
+            {new Date(this.state.selectedTimeStamp).toLocaleString()}
+            <br/>
+            {this.state.busRoutes.join(', ')}
+          </span>
+
+          :null
+        }
+        <Aside
+          titleIndex={1}
+          setPanelVisibility={this.setPanelVisibility}
+        />
       </div>
     )
   }

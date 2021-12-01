@@ -1,14 +1,14 @@
 import React from 'react';
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
+
 import { MapLayersReal } from './MapLayersReal'
-// import { MapLayersRealStatic } from './MapLayersRealStatic'
-import { getPathFromJson, getPointsFromPath, calculateBunchingPoints, getGeoJsonFromPoints, getPathFromPoints } from './helper/formatData'
-// import { layerControl } from './helper/style';
+import { getPointsFromPath, calculateBunchingPoints, getPathFromPoints } from './helper/formatData'
+import { layerControl } from './helper/style';
 import { MapStylePicker } from './helper/controllers';
-// import { START_TIME, COMMON_BUS_ROUTES } from './helper/constants';
-// import { getUrl } from './helper/helperFuns'
-// // import { Aside } from './components/Aside'
-// import Header from './components/Header'
-// import { queryData } from './realTime/queryData'
+import { PANELS_TO_SHOW } from './helper/settings'
+import { Loading } from './components/Loading'
+import { Aside } from './components/Aside'
 
 const DURATION = 3 // minutes
 
@@ -16,26 +16,33 @@ export default class AppReal extends React.Component{
 
   state = {
     dataCollection: {},
-    // dataToShow: [],
     style: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
-    // selectedTimeStamp: START_TIME,
-    // busRoutes: [],
-    // currMaxTime: 4000,
-    // currMinTime: 0,
     prevTimestamp: 0, // s
-    earliestTimestamp: 0 // ms
+    earliestTimestamp: 0, // ms
+    storedTimestamps: [], // stored time stamps from 
+    panelVisibilitySettings: null
   }
 
   shouldComponentUpdate(nextProps, nextState) {
     console.log('shouldComponentUpdate')
     return nextState.prevTimestamp !== this.state.prevTimestamp
           || nextState.style !== this.state.style
+          || nextState.panelVisibilitySettings !== this.state.panelVisibilitySettings
   }
 
   componentDidMount(){
+    const panelVisibilitySettings = Object.keys(PANELS_TO_SHOW).reduce(
+      (accu, key) => ({
+        ...accu,
+        [key]: PANELS_TO_SHOW[key].value
+      }),
+      {}
+    )
     this.setState({
-      earliestTimestamp: new Date().getTime()
+      earliestTimestamp: new Date().getTime(),
+      panelVisibilitySettings
     })
+
     this.queryData()
   }
 /**
@@ -55,6 +62,7 @@ export default class AppReal extends React.Component{
     // const urlStr = 'http://localhost:4000/dev/'
     // const urlStr = 'https://vj9tinkr4k.execute-api.us-east-1.amazonaws.com/dev/';//'http://localhost:5000/'
     this.timer = setInterval(() => {
+      NProgress.start();
       fetch(urlStr, {
         method: "GET",
         headers: {
@@ -93,14 +101,12 @@ export default class AppReal extends React.Component{
           })
 
           // delete the points that is beyond 1 min frame
-          // console.log(data.timestamp * 1000, this.state.earliestTimestamp, data.timestamp * 1000 - this.state.earliestTimestamp)
           if (data.timestamp * 1000 > this.state.earliestTimestamp + DURATION * 60 * 1000) {
             // pop out the outdated data
             this.setState({
-              earliestTimestamp: (data.timestamp - DURATION * 60) * 1000
             }, () => {
             for (let i = 0; i < newPoints.length; i++) {
-              if (newPoints[i].timestamp < this.state.earliestTimestamp) {
+              if (newPoints[i].timestamp < (data.timestamp - DURATION * 60) * 1000) {
                 // pop the first ele  
                 newPoints.shift()
                 // console.log('deleting points')
@@ -116,9 +122,8 @@ export default class AppReal extends React.Component{
           const newPaths = getPathFromPoints(newPoints)
           newPoints = getPointsFromPath(newPaths)
           calculateBunchingPoints(newPoints, newPaths, 0.5, 120)
-          // console.log('queryData', newPoints)
-          // console.log('queryData', newPaths)
           this.setState({
+            earliestTimestamp: newPoints[0].timestamp,
             prevTimestamp: data.timestamp,
             dataCollection: {
               points: newPoints,
@@ -128,6 +133,7 @@ export default class AppReal extends React.Component{
         }
       }    
       ) // Promise
+      NProgress.done();
     }, 5000);
   }
 
@@ -135,13 +141,20 @@ export default class AppReal extends React.Component{
     this.setState({ style });
   };
 
+  setPanelVisibility = (settings) => {
+    console.log(settings)
+    this.setState({
+      panelVisibilitySettings: settings
+    })
+  }
+
   render(){
     // console.log("this.state in render", this.state)
     // console.log("dataCollection in render", this.state.dataCollection.points)
+    const isLoading = this.state.prevTimestamp * 1000 - this.state.earliestTimestamp < 60 * 1000 // show loading label when the data is less than one minute's worth
 
     return (
       <div>
-        hello
          <MapStylePicker 
           onStyleChange={this.onStyleChange}
           currentStyle={this.state.style}
@@ -149,25 +162,30 @@ export default class AppReal extends React.Component{
         <MapLayersReal
           data={this.state.dataCollection}
           currMinTime={this.state.earliestTimestamp}
-          currMaxTime={new Date().getTime()}
+          currMaxTime={this.state.prevTimestamp * 1000}
           mapStyle={this.state.style}
+          show={!isLoading}
+          panelVisibilitySettings={this.state.panelVisibilitySettings}
           // setSelectedDataSource={this.setSelectedDataSource}
         />
-        {/*<span style={{...layerControl, top: '0px'}}>
-          <b>Current Data Source:</b>
-          <br/>
-          {new Date(this.state.selectedTimeStamp).toString()}
-          <br/>
-          {this.state.busRoutes.join(', ')}
-        </span>
+        { this.state.panelVisibilitySettings && this.state.panelVisibilitySettings.currentDataSourcePanel === true ?
+          <span style={{...layerControl, top: '0px', right: '900px'}}>
+            <b>Current Data Source:</b>
+            <br/>
+            {new Date().toLocaleString()}
+            <br/>
+            ALL NEW YORK CITY BUS ROUTES
+          </span>
+          : null
+        }
+        {isLoading ?
+          <Loading flag={this.state.show}></Loading>
+        : null}
+
         <Aside
-          dateTime={new Date(this.state.selectedTimeStamp).toString()}
-          busRoutes={this.state.busRoutes.join(', ')}
+          titleIndex={0}
+          setPanelVisibility={this.setPanelVisibility}
         />
-        {/* <Header 
-          dateTime={new Date(this.state.selectedTimeStamp).toString()}
-          busRoutes={this.state.busRoutes.join(', ')}
-          /> */}
       </div>
     )
   }

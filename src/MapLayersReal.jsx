@@ -17,9 +17,7 @@ import { WithTime } from "./helper/Timer";
 import { tooltipStyle, layerControl } from './helper/style'; // Mouseover interaction
 import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, DEFAULT_THEME } from './helper/constants'
 import {
-  // MapStylePicker,
   LayerControls, // create settings for our scatterplot layer
-  // DataSourceControls
 } from './helper/controllers';
 import { LAYER_CONTROLS, DATA_CONTROLS } from './helper/settings'
 import { convertTimeToTimer, setTimerStart } from './helper/helperFuns';
@@ -27,13 +25,13 @@ import { calculateBunchingPoints, getGeoJsonFromPoints } from './helper/formatDa
 
 // Trips can only be called in a function, it uses hooks
 export function MapLayersReal (props) {
-  const { data, mapStyle } = props
+  const { data, mapStyle, show, panelVisibilitySettings } = props
 
   // time sync and control
   setTimerStart(props.currMinTime) // adjust the start time for timer to 0, in case of negative/huge timer
   const currMinTime = convertTimeToTimer(props.currMinTime);
   const currMaxTime = convertTimeToTimer(props.currMaxTime);
-  const currentTimeObj = WithTime(currMaxTime)
+  const currentTimeObj = WithTime(currMaxTime, 10)
   
   // reading setting from LAYER_CONTROLS and DATA_CONTROLS
   const [settings, setSettings] = useState(
@@ -227,19 +225,22 @@ export function MapLayersReal (props) {
         {hover.label.map(content => (<div key={content}>{content}</div>))}
         </div>
       )}
-      <div className="layer-controls" style ={{...layerControl, overflow: 'auto', height:'500px'}}>
-         <LayerControls
-          title='Map Displaying Controller'
-          settings={settings}
-          propCtrls={LAYER_CONTROLS}
-          onChange={(settingName, newValue) => {
-            setSettings({
-              ...settings,
-              [settingName]: newValue
-            });
-          }}
-        /> 
-      </div>
+      { panelVisibilitySettings && panelVisibilitySettings.mapDisplayController === true ?
+        <div className="layer-controls" style ={{...layerControl, overflow: 'auto'}}>
+          <LayerControls
+            title='Map Displaying Controller'
+            settings={settings}
+            propCtrls={LAYER_CONTROLS}
+            onChange={(settingName, newValue) => {
+              setSettings({
+                ...settings,
+                [settingName]: newValue
+              });
+            }}
+          />
+        </div>
+        : null
+      }
 
       <DeckGL
         layers={layers}
@@ -261,7 +262,8 @@ export function MapLayersReal (props) {
         />
       </DeckGL>
       {
-        (data && data.length !== 0) && (settings.showPositions === 1 || settings.showTripTrace === true) ?
+        (show && panelVisibilitySettings && panelVisibilitySettings.timerBar === true &&
+          data && data.length !== 0) && (settings.showPositions === 1 || settings.showTripTrace === true) ?
           <span style={{...layerControl, top: '0px', right: '300px'}}>
           <div style={{ width: '100%', marginTop: "1rem" }}>
             <b>Trace & Animation Controller</b>
@@ -275,8 +277,13 @@ export function MapLayersReal (props) {
               readOnly
               onChange={ e => { currentTimeObj.setCurrentTime(Number(e.target.value)); }}
             />
-            {/* Time: {currentTimeObj.getCurrentTime()} */}
-            Seconds: {currMinTime},  {currMaxTime}
+            {/* Time: {currentTimeObj.getCurrentTime()} 
+            <br></br>
+            Seconds: {currMinTime} - {currMaxTime}
+            <br></br>*/}
+            Bus Positions: {data.points ? data.points.length : 0}
+            <br></br>
+            Bus Trips: {data.paths ? data.paths.length : 0}
             <br></br>
             Begin: {new Date(props.currMinTime).toLocaleString()}
             <br></br>

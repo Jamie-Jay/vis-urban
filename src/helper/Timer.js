@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export const WithTime = (maxTime) => {
+export const WithTime = (endAt, speedRate = 1) => {
 
     // The key in all of this is the currentTime variable. 
     // This variable tells DeckGL which path coordinate to render, based on the the corresponding timestamp.
@@ -24,27 +24,42 @@ export const WithTime = (maxTime) => {
     // it allows the browser to request the interval when it's ready (based on how long the previous loop took to render).
     // https://css-tricks.com/using-requestanimationframe/
     // https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
+    // http://creativejs.com/resources/requestanimationframe/
     const [animation] = useState({});
 
     const animate = () => {
-      setTime(t => (t + animationSpeed) % maxTime);
+      
+
+      setTime(t => (t + animationSpeed) % Math.ceil(endAt * speedRate));
       animation.id = window.requestAnimationFrame(animate);
     };
 
     useEffect(
       () => {
-        animation.id = window.requestAnimationFrame(animate);
+        if (endAt > 0) {
+          animation.id = window.requestAnimationFrame(animate);
+        }
         return () => window.cancelAnimationFrame(animation.id);
       },
-      [animation, maxTime]
+      [animation, endAt]
+    );
+
+    const [timeOutput, setTimeOutput] = useState(0);
+    useEffect(
+      () => {
+        if (time % speedRate === 0) {
+          setTimeOutput(time / speedRate)
+        }
+      },
+      [time]
     );
 
     function getCurrentTime () {
-      return time;
+      return timeOutput; // Slow down the animation speed
     }
 
     function setCurrentTime (newTime) {
-      setTime(newTime);
+      setTime(newTime * speedRate);
     }
 
     return {
