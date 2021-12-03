@@ -18,12 +18,19 @@ export const About = () => (
         <div className="header"> About This Visualization </div>
         <div className="content">
           {' '}
-          This is the paragraph 1 of introduction
+          This is a Visualization Application to visualize the New York City Bus Routes Positions.
+          There are two modes. The first mode is showing the history bus routes. It shows one hour 
+          worth of data from an API Anothony povides (https://api.buswatcher.org/docs). The users are
+          allowed to select what data to show - which hour and which bus routes. It also provides filters
+          and settings to formatting symbols and tokens showing on the map.
           {/* Lorem ipsum dolor sit amet consectetur adipisicing elit. Atque, a nostrum.
           Dolorem, repellat quidem ut, minima sint vel eveniet quibusdam voluptates
           delectus doloremque, explicabo tempore dicta adipisci fugit amet dignissimos? */}
           <br />
-          This is the paragraph 2 of introduction
+          This second mode is showing 5 minutes loop of latest data from New York City MTA GTFS. It acquires
+          data every 5 seconds directly from API (https://vj9tinkr4k.execute-api.us-east-1.amazonaws.com/dev/ALL) which
+          gets latest data from New York City MTA GTFS API and gives data with trip information. This mode shows all
+          bus positions and trips in New York city in the most recent 5 miuntes.
           {/* Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur sit
           commodi beatae optio voluptatum sed eius cumque, delectus saepe repudiandae
           explicabo nemo nam libero ad, doloribus, voluptas rem alias. Vitae? */}
@@ -44,7 +51,7 @@ export const About = () => (
           <button
             className="button"
             onClick={() => {
-              console.log('introduction modal closed ');
+              // console.log('introduction modal closed ');
               close();
             }}
           >

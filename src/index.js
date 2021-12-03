@@ -13,7 +13,7 @@ ReactDOM.render(
   <BrowserRouter>
     <Routes>
       <Route exact path="/" element={ <AppHistorical /> } />
-      <Route path="/3MinLoop" element={ <AppReal /> } />
+      <Route path="/5MinLoop" element={ <AppReal /> } />
     </Routes>
   </BrowserRouter>,
   document.getElementById('root')

@@ -37,7 +37,7 @@ export const Aside = (props) => {
     menuCollapse ? setMenuCollapse(false) : setMenuCollapse(true);
   };
 
-  const titleContent = ['3 MIN LOOP Map', 'History Map']
+  const titleContent = ['5 MIN LOOP Map', 'History Map']
 
   const [settings, setSettings] = useState(
     Object.keys(penelsToShow).reduce(
@@ -103,7 +103,7 @@ export const Aside = (props) => {
             </div>
 
             {/* links to switch between real time and history map */}
-            <a href="3MinLoop" style={{
+            <a href="5MinLoop" style={{
               fontSize: 10, 
               fontWeight: titleIndex===0 ? 'bold' : 'normal',
               }}>{titleContent[0]}</a>
@@ -133,7 +133,7 @@ export const Aside = (props) => {
           {/* <MenuItem icon={<FaGem />}> components</MenuItem> */}
           <SubMenu title="components" icon={<FaCodeBranch />}>
             {/* links to switch between real time and history map */}
-            <MenuItem><a href="3MinLoop">go to {titleContent[0]}</a></MenuItem>
+            <MenuItem><a href="5MinLoop">go to {titleContent[0]}</a></MenuItem>
             <MenuItem><a href="../#">go to {titleContent[1]}</a></MenuItem>
 
           </SubMenu>

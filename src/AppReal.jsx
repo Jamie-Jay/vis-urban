@@ -10,7 +10,8 @@ import { INIT_MAP_STYLE } from './helper/constants'
 import { Loading } from './components/Loading'
 import { Aside } from './components/Aside'
 
-const DURATION = 3 // minutes
+const PLAYBACK_DURATION = 5 // minutes
+const LOADING_DURATION = 30 // seconds
 
 export default class AppReal extends React.Component{
 
@@ -98,12 +99,12 @@ export default class AppReal extends React.Component{
           })
 
           // delete the points that is beyond 1 min frame
-          if (data.timestamp * 1000 > this.state.earliestTimestamp + DURATION * 60 * 1000) {
+          if (data.timestamp * 1000 > this.state.earliestTimestamp + PLAYBACK_DURATION * 60 * 1000) {
             // pop out the outdated data
             this.setState({
             }, () => {
             for (let i = 0; i < newPoints.length; i++) {
-              if (newPoints[i].timestamp < (data.timestamp - DURATION * 60) * 1000) {
+              if (newPoints[i].timestamp < (data.timestamp - PLAYBACK_DURATION * 60) * 1000) {
                 // pop the first ele  
                 newPoints.shift()
                 // console.log('deleting points')
@@ -144,7 +145,7 @@ export default class AppReal extends React.Component{
   render(){
     // console.log("this.state in render", this.state)
     // console.log("dataCollection in render", this.state.dataCollection.points)
-    const isLoading = this.state.prevTimestamp * 1000 - this.state.earliestTimestamp < 30 * 1000 // show loading label when the data is less than one minute's worth
+    const isLoading = this.state.prevTimestamp * 1000 - this.state.earliestTimestamp < LOADING_DURATION * 1000 // show loading label when the data is less than one minute's worth
 
     return (
       <div>
