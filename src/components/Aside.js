@@ -1,4 +1,4 @@
-import React, { useState, useSyncCallback } from 'react';
+import React, { useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import {
   ProSidebar,
@@ -6,10 +6,10 @@ import {
   MenuItem,
   SubMenu,
   SidebarHeader,
-  // SidebarFooter,
+  SidebarFooter,
   SidebarContent,
 } from 'react-pro-sidebar';
-import { FaTachometerAlt, FaGem, FaList, FaGithub, FaRegLaughWink, FaHeart } from 'react-icons/fa';
+import { FaTachometerAlt, FaGem, FaList, FaGithub, FaRegLaughWink, FaHeart, FaRegMap, FaCodeBranch } from 'react-icons/fa';
 import { FiHome, FiLogOut, FiArrowLeftCircle, FiArrowRightCircle } from "react-icons/fi";
 
 //import sidebar css from react-pro-sidebar module
@@ -19,34 +19,44 @@ import "./Aside.css";
 import {
   LayerControls, // create settings for our scatterplot layer
 } from '../helper/controllers';
-import { PANELS_TO_SHOW } from '../helper/settings'
+import { MapStylePicker } from '../helper/controllers';
+import { INIT_MAP_STYLE } from '../helper/constants';
 
 import { About } from './About'
 
 export const Aside = (props) => {
-  const { setPanelVisibility,
+  const { setMeneItems, penelsToShow,
     titleIndex = 0 } = props
 
-    //create initial menuCollapse state using useState hook
-    const [menuCollapse, setMenuCollapse] = useState(true)
+  //create initial menuCollapse state using useState hook
+  const [menuCollapse, setMenuCollapse] = useState(true)
 
-    //create a custom function that will change menucollapse state from false to true and true to false
-    const menuIconClick = () => {
-      //condition checking to change state from true to false and vice versa
-      menuCollapse ? setMenuCollapse(false) : setMenuCollapse(true);
-    };
+  //create a custom function that will change menucollapse state from false to true and true to false
+  const menuIconClick = () => {
+    //condition checking to change state from true to false and vice versa
+    menuCollapse ? setMenuCollapse(false) : setMenuCollapse(true);
+  };
 
-    const titleContent = ['Real Time Map', 'History Map']
+  const titleContent = ['3 MIN LOOP Map', 'History Map']
 
-    const [settings, setSettings] = useState(
-      Object.keys(PANELS_TO_SHOW).reduce(
-        (accu, key) => ({
-          ...accu,
-          [key]: PANELS_TO_SHOW[key].value
-        }),
-        {}
-      )
-    );
+  const [settings, setSettings] = useState(
+    Object.keys(penelsToShow).reduce(
+      (accu, key) => ({
+        ...accu,
+        [key]: penelsToShow[key].value
+      }),
+      {
+        mapThemeStyle: INIT_MAP_STYLE
+      }
+    )
+  );
+
+  function handleItemChange (settingName, newValue) {
+    const changedSet = {...settings,
+      [settingName]: newValue}
+    setSettings(changedSet);
+    setMeneItems(changedSet)
+  }
 
   return (
     <div >
@@ -58,7 +68,7 @@ export const Aside = (props) => {
       breakPoint="md"
       // onToggle={handleToggleSidebar}
     >
-      <SidebarHeader>
+      {/* <SidebarHeader> */}
         {/* <div
           style={{
             padding: '24px',
@@ -76,23 +86,32 @@ export const Aside = (props) => {
         <SidebarHeader className="mapOptions">
           <div className="logotext"
                 style={{
-                  padding: '24px',
+                  padding: '12px',
                   textTransform: 'uppercase',
                   fontWeight: 'bold',
                   fontSize: 14,
                   letterSpacing: '1px',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}>
+                  // whiteSpace: 'nowrap',
+                  wordWrap: 'break-word',
+                  // wordBreak: 'break-all' 
+                }}
+                >
               {/* small and big change using menucollapse state */}
-              <p>{menuCollapse ? titleContent[titleIndex].split(' ')[0] : titleContent[titleIndex]}</p>
+              <p>{/*menuCollapse ? titleContent[titleIndex].split(' ')[0] : */titleContent[titleIndex]}</p>
             </div>
 
             {/* links to switch between real time and history map */}
-            <a href="real" style={{fontSize: 10, fontWeight: titleIndex===0 ? 'bold' : 'normal'}}>{titleContent[0]}</a>
+            <a href="3MinLoop" style={{
+              fontSize: 10, 
+              fontWeight: titleIndex===0 ? 'bold' : 'normal',
+              }}>{titleContent[0]}</a>
             <br></br>
-            <a href="../#" style={{fontSize: 10, fontWeight: titleIndex===1 ? 'bold' : 'normal'}}>{titleContent[1]}</a>
+            <a href="../#" style={{
+              fontSize: 10, 
+              fontWeight: titleIndex===1 ? 'bold' : 'normal'
+              }}>{titleContent[1]}</a>
 
             <div className="closemenu" onClick={menuIconClick}>
               {/* changing menu collapse icon on click */}
@@ -103,7 +122,7 @@ export const Aside = (props) => {
               )}
             </div>
           </SidebarHeader>
-      </SidebarHeader>
+      {/* </SidebarHeader> */}
 
       <SidebarContent>
         <Menu iconShape="circle">
@@ -112,9 +131,9 @@ export const Aside = (props) => {
           </SubMenu>
 
           {/* <MenuItem icon={<FaGem />}> components</MenuItem> */}
-          <SubMenu title="components" icon={<FaGem />}>
+          <SubMenu title="components" icon={<FaCodeBranch />}>
             {/* links to switch between real time and history map */}
-            <MenuItem><a href="real">go to {titleContent[0]}</a></MenuItem>
+            <MenuItem><a href="3MinLoop">go to {titleContent[0]}</a></MenuItem>
             <MenuItem><a href="../#">go to {titleContent[1]}</a></MenuItem>
 
           </SubMenu>
@@ -123,17 +142,20 @@ export const Aside = (props) => {
         <Menu iconShape="circle">
         <SubMenu title="What panel to show" icon={<FaList />}>
           <LayerControls
-          title='What panel(s) to show'
-          settings={settings}
-          propCtrls={PANELS_TO_SHOW}
-          onChange={(settingName, newValue) => {
-            const changedSet = {...settings,
-              [settingName]: newValue}
-            setSettings(changedSet);
-            setPanelVisibility(changedSet)
-          }}
-        />
+            title='What panel(s) to show'
+            settings={settings}
+            propCtrls={penelsToShow}
+            onChange={handleItemChange}
+          />
         </SubMenu>
+        <SubMenu title="Map Theme" icon={<FaRegMap />}>
+          Theme Picker
+          <MapStylePicker 
+            onStyleChange={(newStyle) => handleItemChange('mapThemeStyle', newStyle)}
+            currentStyle={settings.mapThemeStyle}
+          />
+        </SubMenu>
+        
           {/*<SubMenu title="Data Source" icon={<FaList />}>              
              <MenuItem>{dateTime}</MenuItem>
             <MenuItem>{busRoutes}</MenuItem>
@@ -178,7 +200,7 @@ export const Aside = (props) => {
         </Menu>
       </SidebarContent>
 
-      {/* <SidebarFooter style={{ textAlign: 'center' }}>
+      <SidebarFooter style={{ textAlign: 'center' }}>
         <div
           className="sidebar-btn-wrapper"
           style={{
@@ -186,18 +208,18 @@ export const Aside = (props) => {
           }}
         >
           <a
-            href="https://github.com/azouaoui-med/react-pro-sidebar"
+            href="https://github.com/Jamie-Jay/vis-urban/tree/master"
             target="_blank"
             className="sidebar-btn"
             rel="noopener noreferrer"
           >
             <FaGithub />
-            <span style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+            {/* <span style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
               viewSource
-            </span>
+            </span> */}
           </a>
         </div>
-      </SidebarFooter> */}
+      </SidebarFooter>
     </ProSidebar>
     </div>
   );

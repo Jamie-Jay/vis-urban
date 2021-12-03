@@ -2,8 +2,7 @@ import React from 'react';
 import { MapLayers } from './MapLayers'
 import { getPathFromJson, getPointsFromPath, calculateBunchingPoints, getGeoJsonFromPoints } from './helper/formatData'
 import { layerControl } from './helper/style';
-import { MapStylePicker } from './helper/controllers';
-import { START_TIME, COMMON_BUS_ROUTES } from './helper/constants';
+import { START_TIME, COMMON_BUS_ROUTES, INIT_MAP_STYLE } from './helper/constants';
 import { PANELS_TO_SHOW } from './helper/settings'
 import { getUrl } from './helper/helperFuns'
 import { Aside } from './components/Aside'
@@ -15,33 +14,29 @@ export default class AppHistorical extends React.Component{
   state = {
     dataJsonCollection: [], // store all the raw json from api - [ bus-timestamp: {json}, bus-timestamp: {json}...]
     dataToShow: [],
-    style: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
     selectedTimeStamp: START_TIME,
     busRoutes: [],
     currMaxTime: 4000,
     currMinTime: 0,
-    panelVisibilitySettings: null
+    menuSettings: Object.keys(PANELS_TO_SHOW).reduce(
+      (accu, key) => ({
+        ...accu,
+        [key]: PANELS_TO_SHOW[key].value
+      }),
+      {
+        mapThemeStyle: INIT_MAP_STYLE
+      }
+    )
   }
 
   shouldComponentUpdate(nextProps, nextState) {
     return nextState.selectedTimeStamp !== this.state.selectedTimeStamp 
           || nextState.busRoutes !== this.state.busRoutes
           || nextState.style !== this.state.style
-          || nextState.panelVisibilitySettings !== this.state.panelVisibilitySettings
+          || nextState.menuSettings !== this.state.menuSettings
   }
 
   componentDidMount(){
-    const panelVisibilitySettings = Object.keys(PANELS_TO_SHOW).reduce(
-      (accu, key) => ({
-        ...accu,
-        [key]: PANELS_TO_SHOW[key].value
-      }),
-      {}
-    )
-    this.setState({
-      panelVisibilitySettings
-    })
-
     this.updateDataCollection(START_TIME, COMMON_BUS_ROUTES)
   }
 
@@ -167,10 +162,6 @@ export default class AppHistorical extends React.Component{
     })
   }
 
-  onStyleChange = style => {
-    this.setState({ style });
-  };
-
   getDataKey(timestamp, busRoute) {
     return busRoute + '-' + timestamp;
   }
@@ -213,10 +204,10 @@ export default class AppHistorical extends React.Component{
     }
   }
 
-  setPanelVisibility = (settings) => {
+  setMeneItems = (settings) => {
     // console.log(settings)
     this.setState({
-      panelVisibilitySettings: settings
+      menuSettings: settings
     })
   }
 
@@ -225,19 +216,14 @@ export default class AppHistorical extends React.Component{
 
     return (
       <div>
-        <MapStylePicker 
-          onStyleChange={this.onStyleChange}
-          currentStyle={this.state.style}
-        />
         <MapLayers 
           data={this.state.dataToShow}
           currMinTime={this.state.currMinTime}
           currMaxTime={this.state.currMaxTime}
-          mapStyle={this.state.style}
           setSelectedDataSource={this.setSelectedDataSource}
-          panelVisibilitySettings={this.state.panelVisibilitySettings}
+          menuSettings={this.state.menuSettings}
         />
-        { this.state.panelVisibilitySettings && this.state.panelVisibilitySettings.currentDataSourcePanel === true ?
+        { this.state.menuSettings && this.state.menuSettings.currentDataSourcePanel === true ?
           <span style={{...layerControl, top: '0px', right: '900px'}}>
             <b>Current Data Source:</b>
             <br/>
@@ -250,7 +236,8 @@ export default class AppHistorical extends React.Component{
         }
         <Aside
           titleIndex={1}
-          setPanelVisibility={this.setPanelVisibility}
+          setMeneItems={this.setMeneItems}
+          penelsToShow={PANELS_TO_SHOW}
         />
       </div>
     )

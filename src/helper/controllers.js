@@ -71,7 +71,7 @@ export class DataSourceControls extends Component {
           <div style={{ height: '25px', textAlign:'right'}}>
           <button style={{ display: 'block', float: 'right', borderRadius: '5px' }} 
                   onClick={this.handleClick}
-                  >Data OK</button>
+                  >Update</button>
           </div>
         </div>
       </div>

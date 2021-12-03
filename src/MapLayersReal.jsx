@@ -19,13 +19,14 @@ import { MAPBOX_TOKEN, INITIAL_VIEW_STATE, DEFAULT_THEME } from './helper/consta
 import {
   LayerControls, // create settings for our scatterplot layer
 } from './helper/controllers';
-import { LAYER_CONTROLS, DATA_CONTROLS } from './helper/settings'
+import { LAYER_CONTROLS_REAL, DATA_CONTROLS } from './helper/settings'
 import { convertTimeToTimer, setTimerStart } from './helper/helperFuns';
-import { calculateBunchingPoints, getGeoJsonFromPoints } from './helper/formatData'
+import { calculateBunchingPoints } from './helper/formatData'
 
 // Trips can only be called in a function, it uses hooks
 export function MapLayersReal (props) {
-  const { data, mapStyle, show, panelVisibilitySettings } = props
+
+  const { data, show, menuSettings } = props
 
   // time sync and control
   setTimerStart(props.currMinTime) // adjust the start time for timer to 0, in case of negative/huge timer
@@ -35,10 +36,10 @@ export function MapLayersReal (props) {
   
   // reading setting from LAYER_CONTROLS and DATA_CONTROLS
   const [settings, setSettings] = useState(
-    Object.keys(LAYER_CONTROLS).reduce(
+    Object.keys(LAYER_CONTROLS_REAL).reduce(
       (accu, key) => ({
         ...accu,
-        [key]: LAYER_CONTROLS[key].value
+        [key]: LAYER_CONTROLS_REAL[key].value
       }),
       Object.keys(DATA_CONTROLS).reduce(
         (accu, key) => ({
@@ -201,6 +202,7 @@ export function MapLayersReal (props) {
   Icons({
         data: data.points,
         settings: settings,
+        unifySymbols: true,
         onHover: hover => _onHover(hover)
       })
       .concat(  
@@ -208,6 +210,7 @@ export function MapLayersReal (props) {
           data: data.paths,
           currentTime: currentTimeObj.getCurrentTime(),
           settings: settings,
+          unifySymbols: true,
           onHover: hover => _onHover(hover) // 'hover' corresponds to one of the data entries that is passed in via prop.data
         }
       )
@@ -225,12 +228,12 @@ export function MapLayersReal (props) {
         {hover.label.map(content => (<div key={content}>{content}</div>))}
         </div>
       )}
-      { panelVisibilitySettings && panelVisibilitySettings.mapDisplayController === true ?
+      { menuSettings && menuSettings.mapDisplayController === true ?
         <div className="layer-controls" style ={{...layerControl, overflow: 'auto'}}>
           <LayerControls
             title='Map Displaying Controller'
             settings={settings}
-            propCtrls={LAYER_CONTROLS}
+            propCtrls={LAYER_CONTROLS_REAL}
             onChange={(settingName, newValue) => {
               setSettings({
                 ...settings,
@@ -256,15 +259,15 @@ export function MapLayersReal (props) {
         in that you can de-couple your visualization logic from your map, and DeckGL will keep everything in sync. */}
         <StaticMap 
           reuseMaps 
-          mapStyle={mapStyle} 
+          mapStyle={menuSettings.mapThemeStyle} 
           mapboxApiAccessToken={MAPBOX_TOKEN}
           preventStyleDiffing={true} 
         />
       </DeckGL>
       {
-        (show && panelVisibilitySettings && panelVisibilitySettings.timerBar === true &&
+        (show && menuSettings && menuSettings.timerBar === true &&
           data && data.length !== 0) && (settings.showPositions === 1 || settings.showTripTrace === true) ?
-          <span style={{...layerControl, top: '0px', right: '300px'}}>
+          <span style={{...layerControl, top: '0px', right: '600px'}}>
           <div style={{ width: '100%', marginTop: "1rem" }}>
             <b>Trace & Animation Controller</b>
             <input

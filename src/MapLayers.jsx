@@ -25,7 +25,7 @@ import { calculateBunchingPoints, getGeoJsonFromPoints } from './helper/formatDa
 
 // Trips can only be called in a function, it uses hooks
 export function MapLayers (props) {
-  const { data, mapStyle, setSelectedDataSource, panelVisibilitySettings } = props
+  const { data, setSelectedDataSource, menuSettings } = props
 
   // time sync and control
   setTimerStart(props.currMinTime) // adjust the start time for timer to 0, in case of negative/huge timer
@@ -250,7 +250,7 @@ export function MapLayers (props) {
         {hover.label.map(content => (<div key={content}>{content}</div>))}
         </div>
       )}
-        { panelVisibilitySettings && panelVisibilitySettings.dataSourceController === true ?
+        { menuSettings && menuSettings.dataSourceController === true ?
           <div className="layer-controls" style ={{...layerControl, /*overflow: 'auto', */right: '300px'}}>
             <DataSourceControls
               settings={settings}
@@ -266,7 +266,7 @@ export function MapLayers (props) {
           </div>
           : null
         }
-        { panelVisibilitySettings && panelVisibilitySettings.mapDisplayController === true ?
+        { menuSettings && menuSettings.mapDisplayController === true ?
           <div className="layer-controls" style ={{...layerControl, overflow: 'auto'}}>
             <LayerControls
               title='Map Displaying Controller'
@@ -297,14 +297,14 @@ export function MapLayers (props) {
         in that you can de-couple your visualization logic from your map, and DeckGL will keep everything in sync. */}
         <StaticMap 
           reuseMaps 
-          mapStyle={mapStyle} 
+          mapStyle={menuSettings.mapThemeStyle} 
           mapboxApiAccessToken={MAPBOX_TOKEN}
           preventStyleDiffing={true} 
         />
       </DeckGL>
       {
-        ( panelVisibilitySettings && panelVisibilitySettings.timerBar === true &&
-          data && data.length !== 0) && (settings.showPositions === 1 || settings.showPositions === 3) ?
+        ( menuSettings && menuSettings.timerBar === true &&
+          data && data.length !== 0) && (settings.showPositions === 1 || settings.showPositions === 3 || settings.showTripTrace === true) ?
           <span style={{...layerControl, right: '600px'}}>
           <div style={{ width: '100%', marginTop: "1rem" }}>
             <b>Trace & Animation Controller</b>

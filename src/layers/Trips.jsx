@@ -4,7 +4,7 @@ import { convertTimeToTimer, colorSchema, colorHighlighted } from '../helper/hel
 
 export const Trips = (props) => {
 
-  const { data, settings, onHover, currentTime } = props;
+  const { data, settings, onHover, currentTime, unifySymbols = false } = props;
   const trailLength = 180;
 
   const layers = [
@@ -29,15 +29,15 @@ export const Trips = (props) => {
       getPath: d => d.path,
       getTimestamps: d => d.timestamps.map((timestamp) => convertTimeToTimer(timestamp)),
 
-      getColor: d => colorSchema(d.vehicle_id),
+      getColor: unifySymbols ? [0, 255, 255] : d => colorSchema(d.vehicle_id),
       // widthUnits, // one of 'meters', 'common', and 'pixels'
       widthScale: settings.TripTraceWidth,
       widthMinPixels: 2,
       // widthMaxPixels: 10,
-      getWidth: d => d.speedmph_avg,
+      getWidth: unifySymbols ? 10 : d => d.speedmph_avg,
       // rounded: true,
-      jointRounded: true,
-      capRounded: true,
+      jointRounded: false,
+      capRounded: false,
       billboard: false,
       // miterLimit,
       // _pathType, // One of null, 'loop' or 'open'

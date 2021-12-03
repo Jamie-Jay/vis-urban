@@ -264,7 +264,7 @@ export function getPointsFromJson (rawData) {
 
 export function getPointsFromPath (paths) {
 
-  if (!paths || paths.length == 0) {
+  if (!paths || paths.length === 0) {
     return null 
   }
 
@@ -381,7 +381,7 @@ export function calculateBunchingPoints(points, paths, threshold, timeWindow) {
  */
 export function getGeoJsonFromPath (paths) {
 
-  if (!paths || paths.length == 0) {
+  if (!paths || paths.length === 0) {
     return null 
   }
 
@@ -411,7 +411,7 @@ export function getGeoJsonFromPath (paths) {
 
 export function getGeoJsonFromPoints (points) {
 
-  if (!points || points.length == 0) {
+  if (!points || points.length === 0) {
    return null 
   }
 

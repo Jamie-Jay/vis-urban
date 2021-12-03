@@ -5,8 +5,8 @@ import 'nprogress/nprogress.css';
 import { MapLayersReal } from './MapLayersReal'
 import { getPointsFromPath, calculateBunchingPoints, getPathFromPoints } from './helper/formatData'
 import { layerControl } from './helper/style';
-import { MapStylePicker } from './helper/controllers';
-import { PANELS_TO_SHOW } from './helper/settings'
+import { PANELS_TO_SHOW_REAL } from './helper/settings'
+import { INIT_MAP_STYLE } from './helper/constants'
 import { Loading } from './components/Loading'
 import { Aside } from './components/Aside'
 
@@ -16,33 +16,28 @@ export default class AppReal extends React.Component{
 
   state = {
     dataCollection: {},
-    style: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
     prevTimestamp: 0, // s
-    earliestTimestamp: 0, // ms
+    earliestTimestamp: new Date().getTime(), // ms
     storedTimestamps: [], // stored time stamps from 
-    panelVisibilitySettings: null
+    menuSettings: Object.keys(PANELS_TO_SHOW_REAL).reduce(
+      (accu, key) => ({
+        ...accu,
+        [key]: PANELS_TO_SHOW_REAL[key].value
+      }),
+      {
+        mapThemeStyle: INIT_MAP_STYLE
+      }
+    )
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    console.log('shouldComponentUpdate')
+    // console.log('shouldComponentUpdate')
     return nextState.prevTimestamp !== this.state.prevTimestamp
           || nextState.style !== this.state.style
-          || nextState.panelVisibilitySettings !== this.state.panelVisibilitySettings
+          || nextState.menuSettings !== this.state.menuSettings
   }
 
   componentDidMount(){
-    const panelVisibilitySettings = Object.keys(PANELS_TO_SHOW).reduce(
-      (accu, key) => ({
-        ...accu,
-        [key]: PANELS_TO_SHOW[key].value
-      }),
-      {}
-    )
-    this.setState({
-      earliestTimestamp: new Date().getTime(),
-      panelVisibilitySettings
-    })
-
     this.queryData()
   }
 /**
@@ -98,6 +93,8 @@ export default class AppReal extends React.Component{
                 direction: curr.trip.directionId,
                 speedmph: 50
               })
+
+              return newPoints
           })
 
           // delete the points that is beyond 1 min frame
@@ -137,38 +134,28 @@ export default class AppReal extends React.Component{
     }, 5000);
   }
 
-  onStyleChange = style => {
-    this.setState({ style });
-  };
-
-  setPanelVisibility = (settings) => {
-    console.log(settings)
+  setMeneItems = (settings) => {
+    // console.log(settings)
     this.setState({
-      panelVisibilitySettings: settings
+      menuSettings: settings
     })
   }
 
   render(){
     // console.log("this.state in render", this.state)
     // console.log("dataCollection in render", this.state.dataCollection.points)
-    const isLoading = this.state.prevTimestamp * 1000 - this.state.earliestTimestamp < 60 * 1000 // show loading label when the data is less than one minute's worth
+    const isLoading = this.state.prevTimestamp * 1000 - this.state.earliestTimestamp < 30 * 1000 // show loading label when the data is less than one minute's worth
 
     return (
       <div>
-         <MapStylePicker 
-          onStyleChange={this.onStyleChange}
-          currentStyle={this.state.style}
-        />
         <MapLayersReal
           data={this.state.dataCollection}
           currMinTime={this.state.earliestTimestamp}
           currMaxTime={this.state.prevTimestamp * 1000}
-          mapStyle={this.state.style}
           show={!isLoading}
-          panelVisibilitySettings={this.state.panelVisibilitySettings}
-          // setSelectedDataSource={this.setSelectedDataSource}
+          menuSettings={this.state.menuSettings}
         />
-        { this.state.panelVisibilitySettings && this.state.panelVisibilitySettings.currentDataSourcePanel === true ?
+        { this.state.menuSettings && this.state.menuSettings.currentDataSourcePanel === true ?
           <span style={{...layerControl, top: '0px', right: '900px'}}>
             <b>Current Data Source:</b>
             <br/>
@@ -184,7 +171,8 @@ export default class AppReal extends React.Component{
 
         <Aside
           titleIndex={0}
-          setPanelVisibility={this.setPanelVisibility}
+          setMeneItems={this.setMeneItems}
+          penelsToShow={PANELS_TO_SHOW_REAL}
         />
       </div>
     )

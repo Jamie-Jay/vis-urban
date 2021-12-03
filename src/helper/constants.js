@@ -7,6 +7,8 @@ export const MAPBOX_TOKEN = 'pk.eyJ1IjoiamFtaWVqYXkiLCJhIjoiY2t1NXRmeWlnMW5kZjMw
 export const START_TIME = 1630468800000;
 export const COMMON_BUS_ROUTES = ['M15', 'Bx4', 'Bx17', 'Bx19'];
 
+export const INIT_MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json';
+
 export const COLOR_PALETTE_VEC = [
   [0xF4, 0xEC, 0x15],
   [0xDA, 0xF0, 0x17],
