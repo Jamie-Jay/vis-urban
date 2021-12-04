@@ -2,7 +2,7 @@ import { START_TIME, COMMON_BUS_ROUTES } from './constants'
 
 export const PANELS_TO_SHOW_REAL = {
   currentDataSourcePanel: {
-    displayName: 'Currnet Data Source Panel',
+    displayName: 'Current Data Source Panel',
     type: 'boolean',
     value: true
   },
@@ -12,7 +12,7 @@ export const PANELS_TO_SHOW_REAL = {
     value: true
   },
   mapDisplayController: {
-    displayName: 'Map Display Controller',
+    displayName: 'Map Displaying Controller',
     type: 'boolean',
     value: false
   }
@@ -20,7 +20,7 @@ export const PANELS_TO_SHOW_REAL = {
 
 export const PANELS_TO_SHOW = {
   currentDataSourcePanel: {
-    displayName: 'Currnet Data Source Panel',
+    displayName: 'Current Data Source Panel',
     type: 'boolean',
     value: true
   },
@@ -35,7 +35,7 @@ export const PANELS_TO_SHOW = {
     value: false
   },
   mapDisplayController: {
-    displayName: 'Map Display Controller',
+    displayName: 'Map Displaying Controller',
     type: 'boolean',
     value: false
   }

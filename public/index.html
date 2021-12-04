@@ -30,7 +30,14 @@
     </style>
     <title>Vis-Urban</title>
   </head>
-  <body>
+
+  <script>
+    function load() {
+      document.getElementById('about-button').click();
+    }
+
+  </script>
+  <body onload="load()"> <!-- load About when open the website --->
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <!--

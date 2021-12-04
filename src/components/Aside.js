@@ -9,8 +9,8 @@ import {
   SidebarFooter,
   SidebarContent,
 } from 'react-pro-sidebar';
-import { FaTachometerAlt, FaGem, FaList, FaGithub, FaRegLaughWink, FaHeart, FaRegMap, FaCodeBranch } from 'react-icons/fa';
-import { FiHome, FiLogOut, FiArrowLeftCircle, FiArrowRightCircle } from "react-icons/fi";
+import { FaTachometerAlt, FaList, FaGithub, FaRegMap, FaCodeBranch } from 'react-icons/fa';
+import { FiArrowLeftCircle, FiArrowRightCircle } from "react-icons/fi";
 
 //import sidebar css from react-pro-sidebar module
 import "react-pro-sidebar/dist/css/styles.css";
@@ -83,7 +83,7 @@ export const Aside = (props) => {
         >
           sidebarTitle
         </div> */}
-        <SidebarHeader className="mapOptions">
+        <SidebarHeader>
           <div className="logotext"
                 style={{
                   padding: '12px',
@@ -103,16 +103,19 @@ export const Aside = (props) => {
             </div>
 
             {/* links to switch between real time and history map */}
-            <a href="5MinLoop" style={{
-              fontSize: 10, 
-              fontWeight: titleIndex===0 ? 'bold' : 'normal',
-              }}>{titleContent[0]}</a>
-            <br></br>
-            <a href="../#" style={{
-              fontSize: 10, 
-              fontWeight: titleIndex===1 ? 'bold' : 'normal'
-              }}>{titleContent[1]}</a>
-
+            <div className="mapOptions">
+              <a href="5MinLoop" 
+                style={{
+                  fontSize: 10, 
+                  fontWeight: titleIndex===0 ? 'bold' : 'normal',
+                }}>{titleContent[0]}</a>
+              <br></br>
+              <a href="../#" 
+                style={{
+                  fontSize: 10, 
+                  fontWeight: titleIndex===1 ? 'bold' : 'normal'
+                }}>{titleContent[1]}</a>
+            </div>
             <div className="closemenu" onClick={menuIconClick}>
               {/* changing menu collapse icon on click */}
               {menuCollapse ? (
@@ -126,36 +129,30 @@ export const Aside = (props) => {
 
       <SidebarContent>
         <Menu iconShape="circle">
-          <SubMenu title="About" icon={<FaTachometerAlt />}>
-            <About></About>
-          </SubMenu>
-
           {/* <MenuItem icon={<FaGem />}> components</MenuItem> */}
-          <SubMenu title="components" icon={<FaCodeBranch />}>
+          <SubMenu title="Map Selector" icon={<FaCodeBranch />}>
             {/* links to switch between real time and history map */}
             <MenuItem><a href="5MinLoop">go to {titleContent[0]}</a></MenuItem>
             <MenuItem><a href="../#">go to {titleContent[1]}</a></MenuItem>
-
           </SubMenu>
-        </Menu>
 
-        <Menu iconShape="circle">
-        <SubMenu title="What panel to show" icon={<FaList />}>
-          <LayerControls
-            title='What panel(s) to show'
-            settings={settings}
-            propCtrls={penelsToShow}
-            onChange={handleItemChange}
-          />
-        </SubMenu>
-        <SubMenu title="Map Theme" icon={<FaRegMap />}>
-          Theme Picker
-          <MapStylePicker 
-            onStyleChange={(newStyle) => handleItemChange('mapThemeStyle', newStyle)}
-            currentStyle={settings.mapThemeStyle}
-          />
-        </SubMenu>
-        
+          <SubMenu title="Toggle Controls" icon={<FaList />}>
+            <LayerControls
+              title='Toggle Controls'
+              settings={settings}
+              propCtrls={penelsToShow}
+              onChange={handleItemChange}
+            />
+          </SubMenu>
+
+          <SubMenu title="Change Theme" icon={<FaRegMap />}>
+            Theme Picker
+            <MapStylePicker 
+              onStyleChange={(newStyle) => handleItemChange('mapThemeStyle', newStyle)}
+              currentStyle={settings.mapThemeStyle}
+            />
+          </SubMenu>
+
           {/*<SubMenu title="Data Source" icon={<FaList />}>              
              <MenuItem>{dateTime}</MenuItem>
             <MenuItem>{busRoutes}</MenuItem>
@@ -198,6 +195,12 @@ export const Aside = (props) => {
             </SubMenu>
           </SubMenu>*/}
         </Menu>
+
+        <Menu iconShape="circle">
+          <SubMenu title="About" icon={<FaTachometerAlt />}>
+            <About></About>
+          </SubMenu>
+        </Menu>
       </SidebarContent>
 
       <SidebarFooter style={{ textAlign: 'center' }}>
@@ -212,11 +215,15 @@ export const Aside = (props) => {
             target="_blank"
             className="sidebar-btn"
             rel="noopener noreferrer"
+            style={{textDecoration: 'none'}}
           >
             <FaGithub />
-            {/* <span style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-              viewSource
-            </span> */}
+            {
+              menuCollapse ? null :
+              <span style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}
+              > View Source Code
+              </span>
+            }
           </a>
         </div>
       </SidebarFooter>

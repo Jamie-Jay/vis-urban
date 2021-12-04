@@ -1,20 +1,30 @@
 .modal {
-  font-size: 12px;
+  font-size: 14px;
   width: 50%; 
+  height: 50%;
   background: white;
   opacity: 0.8;
-  margin: 0 auto;
+  border-radius: 10px;
+  
+	position: relative;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%,-50%);
 }
 .modal > .header {
-  width: 100%;
+  /* width: 100%; */
   border-bottom: 1px solid gray;
   font-size: 18px;
   text-align: center;
   padding: 5px;
+  /* border:1px solid #F00; */
 }
 .modal > .content {
-  width: 100%;
-  padding: 10px 5px;
+  /* width: 500px; */
+  padding: 5px 10px;
+  text-align: justify;
+  margin: 0 auto;
+  /* border:1px solid #F00; */
 }
 .modal > .actions {
   width: 100%;

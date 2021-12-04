@@ -7,6 +7,6 @@
   display: inline-block;
 }
 
-.mapOptions > a:hover, a:active {
+.mapOptions > a:hover, .mapOptions > a:active {
   background-color: red;
 }
