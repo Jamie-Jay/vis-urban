@@ -12,6 +12,7 @@ import { Trips } from './layers/Trips'
 // import { Hexagons } from './layers/Hexagons'
 // import { GeoJson } from './layers/Geojson'
 import { Icons } from './layers/Icons'
+import { TimerComp } from './components/TimerComp'
 
 import { WithTime } from "./helper/Timer";
 import { tooltipStyle, layerControl } from './helper/style'; // Mouseover interaction
@@ -33,6 +34,7 @@ export function MapLayersReal (props) {
   const currMinTime = convertTimeToTimer(props.currMinTime);
   const currMaxTime = convertTimeToTimer(props.currMaxTime);
   const currentTimeObj = WithTime(currMaxTime, 10)
+  const [timerRun, setTimerRun] = useState(true)
   
   // reading setting from LAYER_CONTROLS and DATA_CONTROLS
   const [settings, setSettings] = useState(
@@ -62,6 +64,21 @@ export function MapLayersReal (props) {
       // cleanup
     }
   }, [settings.HightlightRedius, settings.HightlightTimeWindow])
+
+  useEffect(() => {
+    // when no animation layer is active, stop the timer
+    if (settings.showPositions !== 1 && settings.showPositions !== 3 && settings.showTripTrace === false) {
+      currentTimeObj.stopTimer(); 
+      setTimerRun(false)
+    } else {
+      currentTimeObj.continueTimer(); 
+      setTimerRun(true)
+    }
+    
+    return () => {
+      // cleanup
+    }
+  }, [settings.showPositions, settings.showTripTrace])
 
   // hover content
   const [hover, setHover] = useState(
@@ -266,33 +283,28 @@ export function MapLayersReal (props) {
       </DeckGL>
       {
         (show && menuSettings && menuSettings.timerBar === true &&
-          data && data.length !== 0) && (settings.showPositions === 1 || settings.showTripTrace === true) ?
-          <span style={{...layerControl, top: '0px', right: '600px'}}>
-          <div style={{ width: '100%', marginTop: "1rem" }}>
-            <b>Trace & Animation Controller</b>
-            <input
-              style={{ width: '100%' }}
-              type="range"
-              min={currMinTime}
-              max={currMaxTime}
-              step="0.1"
-              value={currentTimeObj.getCurrentTime()}
-              readOnly
-              onChange={ e => { currentTimeObj.setCurrentTime(Number(e.target.value)); }}
-            />
-            {/* Time: {currentTimeObj.getCurrentTime()} 
-            <br></br>
-            Seconds: {currMinTime} - {currMaxTime}
-            <br></br>*/}
-            Bus Positions: {data.points ? data.points.length : 0}
-            <br></br>
-            Bus Trips: {data.paths ? data.paths.length : 0}
-            <br></br>
-            Begin: {new Date(props.currMinTime).toLocaleString()}
-            <br></br>
-            End: {new Date(props.currMaxTime).toLocaleString()}
-          </div>
-        </span>
+          data && data.length !== 0) && 
+          (settings.showPositions === 1 || settings.showTripTrace === true) ?
+          <TimerComp
+            currentTimeObj={currentTimeObj}
+            timerRun={timerRun}
+            setTimerRun={setTimerRun}
+            currMinTime={currMinTime}
+            currMaxTime={currMaxTime}
+            OtherItems={() => <div>
+              {/* Time: {currentTimeObj.getCurrentTime()} 
+              <br></br>
+              Seconds: {currMinTime} - {currMaxTime}
+              <br></br> */}
+              Bus Positions: {data.points ? data.points.length : 0}
+              <br></br>
+              Bus Trips: {data.paths ? data.paths.length : 0}
+              <br></br>
+              Begin: {new Date(props.currMinTime).toLocaleString()}
+              <br></br>
+              End: {new Date(props.currMaxTime).toLocaleString()}
+            </div>}
+          ></TimerComp>
         : null
       }
     </div>

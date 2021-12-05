@@ -5,6 +5,7 @@ export const WithTime = (endAt, speedRate = 1, delay = 60) => {
     // The key in all of this is the currentTime variable. 
     // This variable tells DeckGL which path coordinate to render, based on the the corresponding timestamp.
     const [time, setTime] = useState(0);
+    const [pause, setPause] = useState(false); // true: stop count the timer; false: continue count
     const animationSpeed = 1;
     /*
     // use timeinteval to implement animation
@@ -33,18 +34,20 @@ export const WithTime = (endAt, speedRate = 1, delay = 60) => {
     const [animation] = useState({});
 
     const animate = () => {
-      setTime(t => (t + animationSpeed) % Math.ceil(endAt * speedRate));
-      animation.id = window.requestAnimationFrame(animate);
+      if (endAt > 0 && pause === false) {
+        setTime(t => (t + animationSpeed) % Math.ceil(endAt * speedRate));
+        animation.id = window.requestAnimationFrame(animate);
+      }
     };
 
     useEffect(
       () => {
-        if (endAt > 0) {
+        if (endAt > 0 && pause === false) {
           animation.id = window.requestAnimationFrame(animate);
         }
         return () => window.cancelAnimationFrame(animation.id);
       },
-      [animation, endAt]
+      [animation, endAt, pause]
     );
 
     const [timeOutput, setTimeOutput] = useState(0);
@@ -64,11 +67,33 @@ export const WithTime = (endAt, speedRate = 1, delay = 60) => {
     }
 
     function setCurrentTime (newTime) {
-      setTime(newTime * speedRate);
+      setTime(Math.floor(newTime * speedRate));
+    }
+
+    function continueTimer () {
+      setPause(false);
+    }
+
+    function pauseTimer () {
+      setPause(true);
+    }
+
+    function reStartTimer () {
+      setPause(false);
+      setCurrentTime (0);
+    }
+
+    function stopTimer () {
+      setPause(true);
+      setCurrentTime (0);
     }
 
     return {
       getCurrentTime: getCurrentTime,
-      setCurrentTime: setCurrentTime
+      setCurrentTime: setCurrentTime,
+      continueTimer: continueTimer,
+      pauseTimer: pauseTimer,
+      reStartTimer: reStartTimer,
+      stopTimer: stopTimer
     }
 }
