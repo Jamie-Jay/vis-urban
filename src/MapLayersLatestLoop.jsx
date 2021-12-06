@@ -25,7 +25,7 @@ import { convertTimeToTimer, setTimerStart } from './helper/helperFuns';
 import { calculateBunchingPoints } from './helper/formatData'
 
 // Trips can only be called in a function, it uses hooks
-export function MapLayersReal (props) {
+export function MapLayersLatestLoop (props) {
 
   const { data, show, menuSettings } = props
 

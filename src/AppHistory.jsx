@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapLayers } from './MapLayers'
+import { MapLayersHistory } from './MapLayersHistory'
 import { getPathFromJson, getPointsFromPath, calculateBunchingPoints, getGeoJsonFromPoints } from './helper/formatData'
 import { layerControl } from './helper/style';
 import { START_TIME, COMMON_BUS_ROUTES, INIT_MAP_STYLE } from './helper/constants';
@@ -9,7 +9,7 @@ import { Aside } from './components/Aside'
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 
-export default class AppHistorical extends React.Component{
+export default class AppHistory extends React.Component{
 
   state = {
     dataJsonCollection: [], // store all the raw json from api - [ bus-timestamp: {json}, bus-timestamp: {json}...]
@@ -216,7 +216,7 @@ export default class AppHistorical extends React.Component{
 
     return (
       <div>
-        <MapLayers 
+        <MapLayersHistory 
           data={this.state.dataToShow}
           currMinTime={this.state.currMinTime}
           currMaxTime={this.state.currMaxTime}

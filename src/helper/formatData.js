@@ -221,7 +221,7 @@ function calcAggregatedData (pathByVehicleId) {
  *      bearing: number, 
  *      direction: number, 
  *      speedmph: number,
- *      // for heatmap
+ *      // for bunching info
         heatRadiusThreshold: ,
         heatTimeWindow: ,
         withinThreshold: [],
@@ -429,7 +429,7 @@ export function getGeoJsonFromPoints (points) {
             bearing: curr.bearing,
             speedmph: curr.speedmph,
             direction: curr.direction,
-            // for heatmap
+            // for bunching info
             heatRadiusThreshold: curr.heatRadiusThreshold,
             heatTimeWindow: curr.heatTimeWindow,
             withinThreshold: curr.withinThreshold,

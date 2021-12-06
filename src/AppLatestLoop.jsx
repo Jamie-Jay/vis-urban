@@ -2,7 +2,7 @@ import React from 'react';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 
-import { MapLayersReal } from './MapLayersReal'
+import { MapLayersLatestLoop } from './MapLayersLatestLoop'
 import { getPointsFromPath, calculateBunchingPoints, getPathFromPoints } from './helper/formatData'
 import { layerControl } from './helper/style';
 import { PANELS_TO_SHOW_REAL } from './helper/settings'
@@ -13,7 +13,7 @@ import { Aside } from './components/Aside'
 const PLAYBACK_DURATION = 5 // minutes
 const LOADING_DURATION = 30 // seconds
 
-export default class AppReal extends React.Component{
+export default class AppLatestLoop extends React.Component{
 
   state = {
     dataCollection: {},
@@ -149,7 +149,7 @@ export default class AppReal extends React.Component{
 
     return (
       <div>
-        <MapLayersReal
+        <MapLayersLatestLoop
           data={this.state.dataCollection}
           currMinTime={this.state.earliestTimestamp}
           currMaxTime={this.state.prevTimestamp * 1000}

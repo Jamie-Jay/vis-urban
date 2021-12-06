@@ -25,7 +25,7 @@ import { convertTimeToTimer, setTimerStart } from './helper/helperFuns';
 import { calculateBunchingPoints, getGeoJsonFromPoints } from './helper/formatData'
 
 // Trips can only be called in a function, it uses hooks
-export function MapLayers (props) {
+export function MapLayersHistory (props) {
   const { data, setSelectedDataSource, menuSettings } = props
 
   // time sync and control

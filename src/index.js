@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import AppReal from './AppReal';
-import AppHistorical from './AppHistorical';
+import AppLatestLoop from './AppLatestLoop';
+import AppHistory from './AppHistory';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 // import reportWebVitals from './reportWebVitals';
 
@@ -12,8 +12,8 @@ ReactDOM.render(
   // // </React.StrictMode>,
   <BrowserRouter>
     <Routes>
-      <Route exact path="/" element={ <AppHistorical /> } />
-      <Route path="/5MinLoop" element={ <AppReal /> } />
+      <Route exact path="/" element={ <AppHistory /> } />
+      <Route path="/5MinLoop" element={ <AppLatestLoop /> } />
     </Routes>
   </BrowserRouter>,
   document.getElementById('root')
